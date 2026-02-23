@@ -21,6 +21,28 @@ const CATEGORIES = [
     "Tips & Tricks",
 ];
 
+const inputStyle = {
+    fontFamily: "var(--font-mono)",
+    fontSize: "0.82rem",
+    color: "var(--text)",
+    background: "var(--bg)",
+    border: "1px solid var(--border-mid)",
+    borderRadius: "3px",
+    padding: "8px 12px",
+    width: "100%",
+    outline: "none",
+};
+
+const labelStyle = {
+    fontFamily: "var(--font-mono)",
+    fontSize: "0.65rem",
+    color: "var(--amber)",
+    display: "flex",
+    alignItems: "center",
+    gap: "5px",
+    marginBottom: "5px",
+};
+
 export default function AdminEditor({
     post,
     onSave,
@@ -59,129 +81,167 @@ export default function AdminEditor({
     };
 
     const handleSave = () => {
-        const tags = tagsInput.split(",").map((t) => t.trim()).filter(Boolean);
+        const tags = tagsInput
+            .split(",")
+            .map((t) => t.trim())
+            .filter(Boolean);
         onSave({ ...form, tags });
-    };
-
-    const labelStyle = {
-        fontFamily: "var(--font-pixel)",
-        fontSize: "7px",
-        color: "var(--text-muted)",
-        letterSpacing: "0.5px",
-    };
-
-    const inputStyle = {
-        fontFamily: "var(--font-mono)",
-        fontSize: "14px",
-        color: "var(--text)",
-        background: "var(--bg)",
-        border: "1px solid var(--border-bright)",
-        padding: "8px 12px",
-        width: "100%",
-        outline: "none",
     };
 
     return (
         <motion.div
-            initial={{ opacity: 0, scale: 0.99 }}
-            animate={{ opacity: 1, scale: 1 }}
-            exit={{ opacity: 0, scale: 0.99 }}
-            className="fixed inset-0 z-50 flex items-center justify-center p-4"
-            style={{ background: "rgba(0,0,0,0.85)" }}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            style={{
+                position: "fixed",
+                inset: 0,
+                zIndex: 50,
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                padding: "1rem",
+                background: "rgba(0,0,0,0.8)",
+            }}
         >
-            <div
-                className="w-full max-w-4xl max-h-[90vh] flex flex-col"
+            <motion.div
+                initial={{ scale: 0.98, y: 12 }}
+                animate={{ scale: 1, y: 0 }}
+                exit={{ scale: 0.98, y: 12 }}
                 style={{
+                    width: "100%",
+                    maxWidth: "860px",
+                    maxHeight: "90vh",
+                    display: "flex",
+                    flexDirection: "column",
                     background: "var(--surface)",
-                    border: "1px solid var(--border-bright)",
-                    boxShadow: "0 0 40px var(--primary-glow)",
+                    border: "1px solid var(--border-mid)",
+                    borderRadius: "6px",
+                    overflow: "hidden",
                 }}
             >
-                {/* Header */}
+                {/* Modal Header */}
                 <div
-                    className="flex items-center justify-between px-5 py-3 border-b"
-                    style={{ borderColor: "var(--border)", background: "var(--bg)" }}
+                    style={{
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "space-between",
+                        padding: "14px 20px",
+                        borderBottom: "1px solid var(--border)",
+                        background: "var(--surface2)",
+                        flexShrink: 0,
+                    }}
                 >
-                    <span
-                        style={{
-                            fontFamily: "var(--font-pixel)",
-                            fontSize: "9px",
-                            color: "var(--primary)",
-                        }}
-                    >
-                        {isNew ? "// NEW POST" : "// EDIT POST"}
-                    </span>
-                    <div className="flex items-center gap-2">
-                        <button
-                            onClick={() => setPreview(!preview)}
-                            className="flex items-center gap-2 px-3 py-1.5 transition-all"
+                    <div>
+                        <div
                             style={{
-                                fontFamily: "var(--font-pixel)",
-                                fontSize: "7px",
-                                color: preview ? "var(--accent)" : "var(--text-muted)",
-                                border: "1px solid var(--border)",
+                                fontFamily: "var(--font-mono)",
+                                fontSize: "0.65rem",
+                                color: "var(--amber)",
+                                marginBottom: "2px",
                             }}
                         >
-                            {preview ? <EyeOff size={10} /> : <Eye size={10} />}
-                            {preview ? "EDIT" : "PREVIEW"}
+                            {isNew ? "// new_post" : "// edit_post"}
+                        </div>
+                        <div
+                            style={{
+                                fontFamily: "var(--font-display)",
+                                fontWeight: 700,
+                                fontSize: "1rem",
+                                color: "var(--text)",
+                                letterSpacing: "-0.01em",
+                            }}
+                        >
+                            {isNew ? "New Post" : "Edit Post"}
+                        </div>
+                    </div>
+                    <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                        <button
+                            onClick={() => setPreview(!preview)}
+                            className="btn-outline"
+                            style={{ padding: "6px 12px", fontSize: "0.72rem" }}
+                        >
+                            {preview ? <EyeOff size={13} /> : <Eye size={13} />}
+                            {preview ? "edit" : "preview"}
                         </button>
                         <button
                             onClick={onCancel}
-                            style={{ color: "var(--text-muted)" }}
-                            className="p-1"
+                            style={{
+                                padding: "6px",
+                                color: "var(--text-muted)",
+                                background: "none",
+                                border: "none",
+                                cursor: "pointer",
+                                borderRadius: "3px",
+                            }}
                         >
-                            <X size={16} />
+                            <X size={18} />
                         </button>
                     </div>
                 </div>
 
-                {/* Body */}
-                <div className="flex-1 overflow-y-auto p-5 space-y-4">
+                {/* Body — scrollable */}
+                <div
+                    style={{
+                        flex: 1,
+                        overflowY: "auto",
+                        padding: "1.25rem 1.5rem",
+                        display: "flex",
+                        flexDirection: "column",
+                        gap: "1rem",
+                    }}
+                >
                     {/* Title */}
                     <div>
-                        <label className="flex items-center gap-1 mb-1" style={labelStyle}>
-                            <Type size={8} /> TITLE
+                        <label style={labelStyle}>
+                            <Type size={11} />
+                            title
                         </label>
                         <input
                             value={form.title}
                             onChange={(e) => update("title", e.target.value)}
                             placeholder="Post title..."
-                            style={inputStyle}
+                            style={{ ...inputStyle, fontSize: "1rem", fontFamily: "var(--font-display)", fontWeight: 600 }}
                         />
                     </div>
 
                     {/* Slug */}
                     <div>
-                        <label className="flex items-center gap-1 mb-1" style={labelStyle}>
-                            SLUG
-                        </label>
+                        <label style={labelStyle}>slug</label>
                         <input
                             value={form.slug}
                             onChange={(e) => update("slug", e.target.value)}
                             placeholder="post-slug-url"
-                            style={{ ...inputStyle, color: "var(--secondary)" }}
+                            style={{ ...inputStyle, color: "var(--green)" }}
                         />
                     </div>
 
-                    {/* Category + Date + ReadTime row */}
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    {/* Category + Date + ReadTime */}
+                    <div
+                        style={{
+                            display: "grid",
+                            gridTemplateColumns: "repeat(auto-fit, minmax(160px, 1fr))",
+                            gap: "1rem",
+                        }}
+                    >
                         <div>
-                            <label className="flex items-center gap-1 mb-1" style={labelStyle}>
-                                <Folder_ /> CATEGORY
-                            </label>
+                            <label style={labelStyle}>category</label>
                             <select
                                 value={form.category}
                                 onChange={(e) => update("category", e.target.value)}
-                                style={{ ...inputStyle }}
+                                style={inputStyle}
                             >
                                 {CATEGORIES.map((c) => (
-                                    <option key={c} value={c}>{c}</option>
+                                    <option key={c} value={c}>
+                                        {c}
+                                    </option>
                                 ))}
                             </select>
                         </div>
                         <div>
-                            <label className="flex items-center gap-1 mb-1" style={labelStyle}>
-                                <Calendar size={8} /> DATE
+                            <label style={labelStyle}>
+                                <Calendar size={11} />
+                                date
                             </label>
                             <input
                                 type="date"
@@ -191,9 +251,7 @@ export default function AdminEditor({
                             />
                         </div>
                         <div>
-                            <label className="flex items-center gap-1 mb-1" style={labelStyle}>
-                                READ TIME (min)
-                            </label>
+                            <label style={labelStyle}>read time (min)</label>
                             <input
                                 type="number"
                                 value={form.readTime}
@@ -206,8 +264,9 @@ export default function AdminEditor({
 
                     {/* Tags */}
                     <div>
-                        <label className="flex items-center gap-1 mb-1" style={labelStyle}>
-                            <Tag size={8} /> TAGS (comma separated)
+                        <label style={labelStyle}>
+                            <Tag size={11} />
+                            tags (comma separated)
                         </label>
                         <input
                             value={tagsInput}
@@ -219,9 +278,7 @@ export default function AdminEditor({
 
                     {/* Excerpt */}
                     <div>
-                        <label className="flex items-center gap-1 mb-1" style={labelStyle}>
-                            EXCERPT
-                        </label>
+                        <label style={labelStyle}>excerpt</label>
                         <textarea
                             value={form.excerpt}
                             onChange={(e) => update("excerpt", e.target.value)}
@@ -233,68 +290,69 @@ export default function AdminEditor({
 
                     {/* Body */}
                     <div>
-                        <label className="flex items-center gap-1 mb-1" style={labelStyle}>
-                            <AlignLeft size={8} /> BODY (Markdown)
+                        <label style={labelStyle}>
+                            <AlignLeft size={11} />
+                            body (markdown)
                         </label>
                         <textarea
                             value={form.body}
                             onChange={(e) => update("body", e.target.value)}
-                            placeholder="# Post Title&#10;&#10;Write your post in Markdown..."
-                            rows={14}
-                            style={{ ...inputStyle, resize: "vertical", fontFamily: "var(--font-mono)", fontSize: "13px" }}
+                            placeholder={"# Post Title\n\nWrite your post in Markdown..."}
+                            rows={16}
+                            style={{
+                                ...inputStyle,
+                                resize: "vertical",
+                                lineHeight: 1.6,
+                                minHeight: "300px",
+                            }}
                         />
                     </div>
 
                     {/* Toggles */}
-                    <div className="flex items-center gap-6">
+                    <div style={{ display: "flex", alignItems: "center", gap: "1.5rem" }}>
                         <Toggle
-                            label="PUBLISHED"
+                            label="published"
                             checked={form.published}
                             onChange={(v) => update("published", v)}
                         />
                         <Toggle
-                            label="FEATURED"
+                            label="featured"
                             checked={!!form.featured}
                             onChange={(v) => update("featured", v)}
                         />
                     </div>
                 </div>
 
-                {/* Footer */}
+                {/* Modal Footer */}
                 <div
-                    className="flex items-center justify-end gap-3 px-5 py-3 border-t"
-                    style={{ borderColor: "var(--border)", background: "var(--bg)" }}
+                    style={{
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "flex-end",
+                        gap: "10px",
+                        padding: "14px 20px",
+                        borderTop: "1px solid var(--border)",
+                        background: "var(--surface2)",
+                        flexShrink: 0,
+                    }}
                 >
                     <button
                         onClick={onCancel}
-                        className="px-4 py-2 transition-all"
-                        style={{
-                            fontFamily: "var(--font-pixel)",
-                            fontSize: "7px",
-                            color: "var(--text-muted)",
-                            border: "1px solid var(--border)",
-                        }}
+                        className="btn-outline"
                     >
-                        CANCEL
+                        cancel
                     </button>
                     <button
                         onClick={handleSave}
                         disabled={saving || !form.title}
-                        className="flex items-center gap-2 px-4 py-2 transition-all disabled:opacity-50"
-                        style={{
-                            fontFamily: "var(--font-pixel)",
-                            fontSize: "7px",
-                            color: "var(--bg)",
-                            background: "var(--primary)",
-                            border: "1px solid var(--primary)",
-                            boxShadow: saving ? "none" : "0 0 10px var(--primary-glow)",
-                        }}
+                        className="btn-amber"
+                        style={{ opacity: saving || !form.title ? 0.5 : 1 }}
                     >
-                        <Save size={10} />
-                        {saving ? "COMMITTING..." : "SAVE & COMMIT"}
+                        <Save size={13} />
+                        {saving ? "committing..." : "save & commit"}
                     </button>
                 </div>
-            </div>
+            </motion.div>
         </motion.div>
     );
 }
@@ -309,48 +367,49 @@ function Toggle({
     onChange: (v: boolean) => void;
 }) {
     return (
-        <label className="flex items-center gap-2 cursor-pointer">
+        <label
+            style={{
+                display: "flex",
+                alignItems: "center",
+                gap: "10px",
+                cursor: "pointer",
+            }}
+        >
             <div
-                className="w-8 h-4 relative transition-colors"
                 style={{
-                    background: checked ? "var(--primary)" : "var(--surface2)",
-                    border: "1px solid var(--border-bright)",
+                    width: "36px",
+                    height: "20px",
+                    borderRadius: "10px",
+                    background: checked ? "var(--amber)" : "var(--surface3)",
+                    border: `1px solid ${checked ? "var(--amber)" : "var(--border-mid)"}`,
+                    position: "relative",
+                    transition: "background 0.2s, border-color 0.2s",
+                    flexShrink: 0,
                 }}
                 onClick={() => onChange(!checked)}
             >
                 <div
-                    className="absolute top-0.5 w-3 h-3 transition-all"
                     style={{
-                        left: checked ? "calc(100% - 14px)" : "2px",
-                        background: checked ? "var(--bg)" : "var(--text-muted)",
+                        position: "absolute",
+                        top: "2px",
+                        width: "14px",
+                        height: "14px",
+                        borderRadius: "7px",
+                        background: checked ? "var(--bg)" : "var(--text-faint)",
+                        left: checked ? "calc(100% - 16px)" : "2px",
+                        transition: "left 0.2s, background 0.2s",
                     }}
                 />
             </div>
             <span
                 style={{
-                    fontFamily: "var(--font-pixel)",
-                    fontSize: "7px",
-                    color: checked ? "var(--primary)" : "var(--text-muted)",
+                    fontFamily: "var(--font-mono)",
+                    fontSize: "0.72rem",
+                    color: checked ? "var(--amber)" : "var(--text-muted)",
                 }}
             >
                 {label}
             </span>
         </label>
-    );
-}
-
-// Inline folder icon since Lucide doesn't export Folder_ 
-function Folder_() {
-    return (
-        <svg
-            width="8"
-            height="8"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-        >
-            <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z" />
-        </svg>
     );
 }

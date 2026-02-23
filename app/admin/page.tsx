@@ -20,7 +20,6 @@ import {
     Post,
     fetchPosts,
     sortByDate,
-    generateSlug,
     formatDate,
 } from "@/lib/posts";
 import {
@@ -34,6 +33,27 @@ import {
 } from "@/lib/github";
 
 type Status = "idle" | "loading" | "success" | "error";
+
+const inputStyle = {
+    fontFamily: "var(--font-mono)",
+    fontSize: "0.82rem",
+    color: "var(--text)",
+    background: "var(--bg)",
+    border: "1px solid var(--border-mid)",
+    borderRadius: "3px",
+    padding: "8px 12px",
+    width: "100%",
+    outline: "none",
+    transition: "border-color 0.15s",
+};
+
+const labelStyle = {
+    fontFamily: "var(--font-mono)",
+    fontSize: "0.65rem",
+    color: "var(--amber)",
+    display: "block",
+    marginBottom: "5px",
+};
 
 export default function AdminPage() {
     const [authed, setAuthed] = useState(false);
@@ -56,12 +76,9 @@ export default function AdminPage() {
         undefined
     );
 
-    // Load stored config on mount
     useEffect(() => {
         const stored = loadConfig();
-        if (stored) {
-            setConfig(stored);
-        }
+        if (stored) setConfig(stored);
     }, []);
 
     const handleAuth = async () => {
@@ -75,9 +92,7 @@ export default function AdminPage() {
             loadPosts();
         } else {
             setAuthStatus("error");
-            setAuthError(
-                "Authentication failed. Check your token and repo details."
-            );
+            setAuthError("Authentication failed. Check your token and repo details.");
         }
     };
 
@@ -87,7 +102,6 @@ export default function AdminPage() {
             const data = await readPostsFromGitHub(config);
             setPosts(sortByDate(data));
         } catch {
-            // Fall back to local posts.json
             const data = await fetchPosts();
             setPosts(sortByDate(data));
         } finally {
@@ -104,7 +118,6 @@ export default function AdminPage() {
             const updated = isNew
                 ? [post, ...posts]
                 : posts.map((p) => (p.id === post.id ? post : p));
-
             await writePostsToGitHub(config, updated, sha);
             setPosts(sortByDate(updated));
             setEditingPost(undefined);
@@ -137,7 +150,7 @@ export default function AdminPage() {
             await writePostsToGitHub(config, updated, sha);
             setPosts(updated);
             setSaveStatus("success");
-            setSaveMessage(`Post deleted.`);
+            setSaveMessage("Post deleted.");
         } catch (err) {
             setSaveStatus("error");
             setSaveMessage(
@@ -149,117 +162,109 @@ export default function AdminPage() {
         }
     };
 
-    const inputStyle = {
-        fontFamily: "var(--font-mono)",
-        fontSize: "14px",
-        color: "var(--text)",
-        background: "var(--bg)",
-        border: "1px solid var(--border-bright)",
-        padding: "8px 12px",
-        width: "100%",
-        outline: "none",
-    };
-
-    const labelStyle = {
-        fontFamily: "var(--font-pixel)",
-        fontSize: "7px",
-        color: "var(--text-muted)",
-        display: "block",
-        marginBottom: "4px",
-    };
-
     // --- AUTH SCREEN ---
     if (!authed) {
         return (
-            <div className="max-w-lg mx-auto px-4 py-16">
+            <div
+                style={{
+                    maxWidth: "480px",
+                    margin: "0 auto",
+                    padding: "5rem 1.5rem",
+                }}
+            >
                 <motion.div
-                    initial={{ opacity: 0, y: 20 }}
+                    initial={{ opacity: 0, y: 16 }}
                     animate={{ opacity: 1, y: 0 }}
-                    className="p-8"
                     style={{
                         background: "var(--surface)",
-                        border: "1px solid var(--border-bright)",
-                        boxShadow: "0 0 30px var(--primary-glow)",
+                        border: "1px solid var(--border-mid)",
+                        borderLeft: "3px solid var(--amber)",
+                        borderRadius: "4px",
+                        padding: "2rem",
                     }}
                 >
-                    <div className="flex items-center gap-3 mb-6">
-                        <Shield size={20} style={{ color: "var(--primary)" }} />
-                        <span
-                            style={{
-                                fontFamily: "var(--font-pixel)",
-                                fontSize: "10px",
-                                color: "var(--primary)",
-                            }}
-                        >
-                            ADMIN TERMINAL
-                        </span>
-                    </div>
-
+                    {/* Header */}
                     <div
-                        className="mb-6"
                         style={{
-                            fontFamily: "var(--font-mono)",
-                            fontSize: "14px",
-                            color: "var(--text-muted)",
+                            display: "flex",
+                            alignItems: "center",
+                            gap: "10px",
+                            marginBottom: "1.5rem",
                         }}
                     >
-                        &gt; Enter your GitHub credentials to access the post management
-                        system.
+                        <Shield size={18} style={{ color: "var(--amber)" }} />
+                        <div>
+                            <div
+                                style={{
+                                    fontFamily: "var(--font-display)",
+                                    fontWeight: 700,
+                                    fontSize: "1.1rem",
+                                    color: "var(--text)",
+                                    letterSpacing: "-0.01em",
+                                }}
+                            >
+                                Admin Login
+                            </div>
+                            <div
+                                style={{
+                                    fontFamily: "var(--font-mono)",
+                                    fontSize: "0.65rem",
+                                    color: "var(--amber)",
+                                }}
+                            >
+                                {"// github credentials required"}
+                            </div>
+                        </div>
                     </div>
 
-                    <div className="space-y-4">
+                    <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
                         <div>
-                            <label style={labelStyle}>GITHUB OWNER (username)</label>
+                            <label style={labelStyle}>owner</label>
                             <input
                                 value={config.owner}
-                                onChange={(e) =>
-                                    setConfig((c) => ({ ...c, owner: e.target.value }))
-                                }
-                                placeholder="your-github-username"
+                                onChange={(e) => setConfig((c) => ({ ...c, owner: e.target.value }))}
+                                placeholder="github-username"
                                 style={inputStyle}
                             />
                         </div>
                         <div>
-                            <label style={labelStyle}>REPOSITORY NAME</label>
+                            <label style={labelStyle}>repo</label>
                             <input
                                 value={config.repo}
-                                onChange={(e) =>
-                                    setConfig((c) => ({ ...c, repo: e.target.value }))
-                                }
+                                onChange={(e) => setConfig((c) => ({ ...c, repo: e.target.value }))}
                                 placeholder="myweb"
                                 style={inputStyle}
                             />
                         </div>
                         <div>
-                            <label style={labelStyle}>BRANCH</label>
+                            <label style={labelStyle}>branch</label>
                             <input
                                 value={config.branch}
-                                onChange={(e) =>
-                                    setConfig((c) => ({ ...c, branch: e.target.value }))
-                                }
+                                onChange={(e) => setConfig((c) => ({ ...c, branch: e.target.value }))}
                                 placeholder="main"
                                 style={inputStyle}
                             />
                         </div>
                         <div>
-                            <label style={labelStyle} className="flex items-center gap-1">
-                                <Key size={7} /> GITHUB PERSONAL ACCESS TOKEN
+                            <label
+                                style={{ ...labelStyle, display: "flex", alignItems: "center", gap: "5px" }}
+                            >
+                                <Key size={10} />
+                                personal access token
                             </label>
                             <input
                                 type="password"
                                 value={config.token}
-                                onChange={(e) =>
-                                    setConfig((c) => ({ ...c, token: e.target.value }))
-                                }
+                                onChange={(e) => setConfig((c) => ({ ...c, token: e.target.value }))}
                                 placeholder="ghp_xxxxxxxxxxxxxxxxxxxx"
                                 style={inputStyle}
                             />
                             <div
-                                className="mt-1"
                                 style={{
                                     fontFamily: "var(--font-mono)",
-                                    fontSize: "11px",
-                                    color: "var(--text-muted)",
+                                    fontSize: "0.65rem",
+                                    color: "var(--text-faint)",
+                                    marginTop: "4px",
                                 }}
                             >
                                 Needs contents:write scope. Stored in sessionStorage only.
@@ -269,12 +274,17 @@ export default function AdminPage() {
 
                     {authError && (
                         <div
-                            className="flex items-center gap-2 mt-4 p-3"
                             style={{
-                                background: "rgba(239,68,68,0.1)",
-                                border: "1px solid rgba(239,68,68,0.4)",
+                                display: "flex",
+                                alignItems: "center",
+                                gap: "8px",
+                                marginTop: "1rem",
+                                padding: "10px 14px",
+                                background: "rgba(239,68,68,0.08)",
+                                border: "1px solid rgba(239,68,68,0.3)",
+                                borderRadius: "3px",
                                 fontFamily: "var(--font-mono)",
-                                fontSize: "13px",
+                                fontSize: "0.75rem",
                                 color: "#f87171",
                             }}
                         >
@@ -285,20 +295,17 @@ export default function AdminPage() {
 
                     <button
                         onClick={handleAuth}
-                        disabled={
-                            !config.owner || !config.token || authStatus === "loading"
-                        }
-                        className="w-full flex items-center justify-center gap-2 mt-6 py-3 transition-all disabled:opacity-50"
+                        disabled={!config.owner || !config.token || authStatus === "loading"}
+                        className="btn-amber"
                         style={{
-                            fontFamily: "var(--font-pixel)",
-                            fontSize: "8px",
-                            color: "var(--bg)",
-                            background: "var(--primary)",
-                            boxShadow: "0 0 12px var(--primary-glow)",
+                            width: "100%",
+                            marginTop: "1.5rem",
+                            justifyContent: "center",
+                            opacity: (!config.owner || !config.token || authStatus === "loading") ? 0.5 : 1,
                         }}
                     >
-                        <Github size={12} />
-                        {authStatus === "loading" ? "AUTHENTICATING..." : "CONNECT & LOGIN"}
+                        <Github size={14} />
+                        {authStatus === "loading" ? "connecting..." : "connect & login"}
                     </button>
                 </motion.div>
             </div>
@@ -307,67 +314,79 @@ export default function AdminPage() {
 
     // --- ADMIN DASHBOARD ---
     return (
-        <div className="max-w-7xl mx-auto px-4 py-8">
+        <div style={{ maxWidth: "1280px", margin: "0 auto", padding: "2.5rem 1.5rem" }}>
+
             {/* Header */}
             <motion.div
-                initial={{ opacity: 0, y: -20 }}
+                initial={{ opacity: 0, y: 12 }}
                 animate={{ opacity: 1, y: 0 }}
-                className="flex items-center justify-between mb-6 p-5"
                 style={{
+                    display: "flex",
+                    flexWrap: "wrap",
+                    alignItems: "center",
+                    justifyContent: "space-between",
+                    gap: "1rem",
+                    marginBottom: "1.5rem",
+                    padding: "1.25rem 1.5rem",
                     background: "var(--surface)",
-                    border: "1px solid var(--border-bright)",
+                    border: "1px solid var(--border)",
+                    borderRadius: "4px",
                 }}
             >
                 <div>
                     <div
-                        className="flex items-center gap-2 mb-1"
                         style={{
-                            fontFamily: "var(--font-pixel)",
-                            fontSize: "8px",
-                            color: "var(--green)",
+                            display: "flex",
+                            alignItems: "center",
+                            gap: "8px",
+                            fontFamily: "var(--font-mono)",
+                            fontSize: "0.65rem",
+                            color: "var(--amber)",
+                            marginBottom: "4px",
                         }}
                     >
                         <Shield size={12} />
-                        ADMIN DASHBOARD
+                        {"/* admin dashboard */"}
+                    </div>
+                    <div
+                        style={{
+                            fontFamily: "var(--font-display)",
+                            fontWeight: 700,
+                            fontSize: "1.25rem",
+                            color: "var(--text)",
+                            letterSpacing: "-0.02em",
+                        }}
+                    >
+                        Post Manager
                     </div>
                     <div
                         style={{
                             fontFamily: "var(--font-mono)",
-                            fontSize: "13px",
-                            color: "var(--text-muted)",
+                            fontSize: "0.7rem",
+                            color: "var(--text-faint)",
+                            marginTop: "2px",
                         }}
                     >
                         {config.owner}/{config.repo} @ {config.branch}
                     </div>
                 </div>
-                <div className="flex items-center gap-3">
+
+                <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
                     <button
                         onClick={loadPosts}
                         disabled={loading}
-                        className="flex items-center gap-2 px-3 py-2 transition-all"
-                        style={{
-                            fontFamily: "var(--font-pixel)",
-                            fontSize: "7px",
-                            color: "var(--secondary)",
-                            border: "1px solid var(--border)",
-                        }}
+                        className="btn-outline"
+                        style={{ opacity: loading ? 0.6 : 1 }}
                     >
-                        <RefreshCw size={10} className={loading ? "animate-spin" : ""} />
-                        REFRESH
+                        <RefreshCw size={13} className={loading ? "animate-spin" : ""} />
+                        refresh
                     </button>
                     <button
                         onClick={() => setEditingPost(null)}
-                        className="flex items-center gap-2 px-4 py-2 transition-all"
-                        style={{
-                            fontFamily: "var(--font-pixel)",
-                            fontSize: "7px",
-                            color: "var(--bg)",
-                            background: "var(--primary)",
-                            boxShadow: "0 0 10px var(--primary-glow)",
-                        }}
+                        className="btn-amber"
                     >
-                        <Plus size={10} />
-                        NEW POST
+                        <Plus size={13} />
+                        new post
                     </button>
                 </div>
             </motion.div>
@@ -376,21 +395,26 @@ export default function AdminPage() {
             <AnimatePresence>
                 {saveStatus !== "idle" && (
                     <motion.div
-                        initial={{ opacity: 0, y: -10 }}
+                        initial={{ opacity: 0, y: -8 }}
                         animate={{ opacity: 1, y: 0 }}
                         exit={{ opacity: 0 }}
-                        className="flex items-center gap-2 mb-4 p-3"
                         style={{
+                            display: "flex",
+                            alignItems: "center",
+                            gap: "8px",
+                            marginBottom: "1rem",
+                            padding: "10px 14px",
                             background:
                                 saveStatus === "success"
-                                    ? "rgba(74,222,128,0.1)"
-                                    : "rgba(239,68,68,0.1)",
+                                    ? "rgba(74,222,128,0.08)"
+                                    : "rgba(239,68,68,0.08)",
                             border: `1px solid ${saveStatus === "success"
-                                    ? "rgba(74,222,128,0.4)"
-                                    : "rgba(239,68,68,0.4)"
+                                ? "rgba(74,222,128,0.3)"
+                                : "rgba(239,68,68,0.3)"
                                 }`,
+                            borderRadius: "3px",
                             fontFamily: "var(--font-mono)",
-                            fontSize: "13px",
+                            fontSize: "0.78rem",
                             color: saveStatus === "success" ? "var(--green)" : "#f87171",
                         }}
                     >
@@ -408,22 +432,24 @@ export default function AdminPage() {
 
             {/* Posts Table */}
             <div
-                className="overflow-x-auto"
                 style={{
                     border: "1px solid var(--border)",
-                    background: "var(--surface)",
+                    borderRadius: "4px",
+                    overflow: "hidden",
                 }}
             >
                 {/* Table header */}
                 <div
-                    className="grid gap-px px-4 py-2 border-b"
                     style={{
-                        gridTemplateColumns: "1fr 180px 120px 80px 100px",
-                        borderColor: "var(--border)",
-                        background: "var(--bg)",
-                        fontFamily: "var(--font-pixel)",
-                        fontSize: "7px",
-                        color: "var(--text-muted)",
+                        display: "grid",
+                        gridTemplateColumns: "minmax(0,1fr) 160px 110px 80px 90px",
+                        gap: "0",
+                        padding: "10px 16px",
+                        background: "var(--surface2)",
+                        borderBottom: "1px solid var(--border)",
+                        fontFamily: "var(--font-mono)",
+                        fontSize: "0.62rem",
+                        color: "var(--text-faint)",
                     }}
                 >
                     <div>TITLE</div>
@@ -436,32 +462,55 @@ export default function AdminPage() {
                 {/* Rows */}
                 {loading ? (
                     <div
-                        className="p-8 text-center loading-pulse"
                         style={{
-                            fontFamily: "var(--font-pixel)",
-                            fontSize: "8px",
-                            color: "var(--text-muted)",
+                            padding: "4rem",
+                            textAlign: "center",
+                            fontFamily: "var(--font-mono)",
+                            fontSize: "0.7rem",
+                            color: "var(--amber)",
                         }}
                     >
-                        LOADING POSTS...
+                        {"// loading posts..."}
+                    </div>
+                ) : posts.length === 0 ? (
+                    <div
+                        style={{
+                            padding: "4rem",
+                            textAlign: "center",
+                            fontFamily: "var(--font-mono)",
+                            fontSize: "0.7rem",
+                            color: "var(--text-faint)",
+                        }}
+                    >
+                        {"// no posts found"}
                     </div>
                 ) : (
-                    posts.map((post) => (
+                    posts.map((post, i) => (
                         <div
                             key={post.id}
-                            className="grid gap-px px-4 py-3 border-b transition-colors hover:bg-surface2"
                             style={{
-                                gridTemplateColumns: "1fr 180px 120px 80px 100px",
-                                borderColor: "var(--border)",
+                                display: "grid",
+                                gridTemplateColumns: "minmax(0,1fr) 160px 110px 80px 90px",
+                                gap: "0",
+                                padding: "12px 16px",
+                                borderBottom: i < posts.length - 1 ? "1px solid var(--border)" : "none",
+                                background: "var(--surface)",
                                 alignItems: "center",
+                                transition: "background 0.1s",
                             }}
+                            onMouseEnter={(e) => ((e.currentTarget as HTMLElement).style.background = "var(--surface2)")}
+                            onMouseLeave={(e) => ((e.currentTarget as HTMLElement).style.background = "var(--surface)")}
                         >
-                            <div>
+                            {/* Title + slug */}
+                            <div style={{ minWidth: 0, paddingRight: "12px" }}>
                                 <div
                                     style={{
                                         fontFamily: "var(--font-mono)",
-                                        fontSize: "13px",
+                                        fontSize: "0.82rem",
                                         color: "var(--text)",
+                                        whiteSpace: "nowrap",
+                                        overflow: "hidden",
+                                        textOverflow: "ellipsis",
                                     }}
                                 >
                                     {post.title}
@@ -469,67 +518,117 @@ export default function AdminPage() {
                                 <div
                                     style={{
                                         fontFamily: "var(--font-mono)",
-                                        fontSize: "11px",
-                                        color: "var(--text-muted)",
+                                        fontSize: "0.65rem",
+                                        color: "var(--text-faint)",
+                                        whiteSpace: "nowrap",
+                                        overflow: "hidden",
+                                        textOverflow: "ellipsis",
                                     }}
                                 >
                                     /{post.slug}
                                 </div>
                             </div>
+
+                            {/* Category */}
                             <div
                                 style={{
                                     fontFamily: "var(--font-mono)",
-                                    fontSize: "12px",
-                                    color: "var(--secondary)",
+                                    fontSize: "0.72rem",
+                                    color: "var(--text-muted)",
+                                    whiteSpace: "nowrap",
+                                    overflow: "hidden",
+                                    textOverflow: "ellipsis",
+                                    paddingRight: "8px",
                                 }}
                             >
                                 {post.category}
                             </div>
+
+                            {/* Date */}
                             <div
                                 style={{
                                     fontFamily: "var(--font-mono)",
-                                    fontSize: "12px",
-                                    color: "var(--text-muted)",
+                                    fontSize: "0.72rem",
+                                    color: "var(--text-faint)",
                                 }}
                             >
                                 {formatDate(post.date)}
                             </div>
+
+                            {/* Status */}
                             <div>
                                 <span
-                                    className="px-2 py-0.5"
                                     style={{
-                                        fontFamily: "var(--font-pixel)",
-                                        fontSize: "6px",
-                                        color: post.published ? "var(--green)" : "var(--text-muted)",
-                                        border: `1px solid ${post.published
-                                                ? "rgba(74,222,128,0.4)"
-                                                : "var(--border)"
-                                            }`,
+                                        fontFamily: "var(--font-mono)",
+                                        fontSize: "0.62rem",
+                                        color: post.published ? "var(--green)" : "var(--text-faint)",
                                         background: post.published
                                             ? "rgba(74,222,128,0.08)"
                                             : "transparent",
+                                        border: `1px solid ${post.published
+                                            ? "rgba(74,222,128,0.3)"
+                                            : "var(--border)"
+                                            }`,
+                                        borderRadius: "3px",
+                                        padding: "2px 6px",
+                                        display: "inline-block",
                                     }}
                                 >
-                                    {post.published ? "LIVE" : "DRAFT"}
+                                    {post.published ? "live" : "draft"}
                                 </span>
                             </div>
-                            <div className="flex items-center gap-2">
+
+                            {/* Actions */}
+                            <div style={{ display: "flex", alignItems: "center", gap: "4px" }}>
                                 <button
                                     onClick={() => setEditingPost(post)}
-                                    className="p-1.5 transition-all hover:text-orange-400"
                                     title="Edit"
-                                    style={{ color: "var(--text-muted)" }}
+                                    style={{
+                                        padding: "6px",
+                                        color: "var(--text-muted)",
+                                        background: "none",
+                                        border: "1px solid transparent",
+                                        borderRadius: "3px",
+                                        cursor: "pointer",
+                                        transition: "color 0.15s, border-color 0.15s",
+                                    }}
+                                    onMouseEnter={(e) => {
+                                        (e.currentTarget as HTMLButtonElement).style.color = "var(--amber)";
+                                        (e.currentTarget as HTMLButtonElement).style.borderColor = "var(--border-mid)";
+                                    }}
+                                    onMouseLeave={(e) => {
+                                        (e.currentTarget as HTMLButtonElement).style.color = "var(--text-muted)";
+                                        (e.currentTarget as HTMLButtonElement).style.borderColor = "transparent";
+                                    }}
                                 >
-                                    <Edit size={13} />
+                                    <Edit size={14} />
                                 </button>
                                 <button
                                     onClick={() => handleDeletePost(post.id)}
                                     disabled={saving}
-                                    className="p-1.5 transition-all hover:text-red-400 disabled:opacity-30"
                                     title="Delete"
-                                    style={{ color: "var(--text-muted)" }}
+                                    style={{
+                                        padding: "6px",
+                                        color: "var(--text-muted)",
+                                        background: "none",
+                                        border: "1px solid transparent",
+                                        borderRadius: "3px",
+                                        cursor: saving ? "not-allowed" : "pointer",
+                                        opacity: saving ? 0.4 : 1,
+                                        transition: "color 0.15s, border-color 0.15s",
+                                    }}
+                                    onMouseEnter={(e) => {
+                                        if (!saving) {
+                                            (e.currentTarget as HTMLButtonElement).style.color = "#f87171";
+                                            (e.currentTarget as HTMLButtonElement).style.borderColor = "rgba(239,68,68,0.3)";
+                                        }
+                                    }}
+                                    onMouseLeave={(e) => {
+                                        (e.currentTarget as HTMLButtonElement).style.color = "var(--text-muted)";
+                                        (e.currentTarget as HTMLButtonElement).style.borderColor = "transparent";
+                                    }}
                                 >
-                                    <Trash2 size={13} />
+                                    <Trash2 size={14} />
                                 </button>
                             </div>
                         </div>
