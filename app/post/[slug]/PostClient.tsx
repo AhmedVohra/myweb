@@ -5,7 +5,7 @@ import { useParams, useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
-import { Clock, Tag, ArrowLeft, ArrowRight, Calendar, ChevronLeft } from "lucide-react";
+import { Clock, ArrowLeft, ArrowRight, Calendar, ChevronLeft } from "lucide-react";
 import Link from "next/link";
 import {
     Post,
@@ -44,12 +44,12 @@ export default function PostPage() {
             <div
                 className="flex items-center justify-center min-h-screen"
                 style={{
-                    fontFamily: "var(--font-pixel)",
-                    fontSize: "10px",
-                    color: "var(--primary)",
+                    fontFamily: "var(--font-mono)",
+                    fontSize: "0.7rem",
+                    color: "var(--amber)",
                 }}
             >
-                LOADING POST...
+                {"// loading post..."}
             </div>
         );
     }
@@ -61,89 +61,97 @@ export default function PostPage() {
     const nextPost = currentIndex > 0 ? allPosts[currentIndex - 1] : null;
 
     return (
-        <div className="max-w-5xl mx-auto px-4 py-8">
+        <div style={{ maxWidth: "1024px", margin: "0 auto", padding: "2.5rem 1.5rem" }}>
+
             {/* Breadcrumb */}
             <motion.div
-                initial={{ opacity: 0, x: -20 }}
+                initial={{ opacity: 0, x: -10 }}
                 animate={{ opacity: 1, x: 0 }}
-                className="flex items-center gap-2 mb-6"
                 style={{
-                    fontFamily: "var(--font-pixel)",
-                    fontSize: "7px",
-                    color: "var(--text-muted)",
+                    display: "flex",
+                    alignItems: "center",
+                    gap: "8px",
+                    fontFamily: "var(--font-mono)",
+                    fontSize: "0.68rem",
+                    color: "var(--text-faint)",
+                    marginBottom: "2rem",
                 }}
             >
                 <Link
                     href="/"
-                    className="flex items-center gap-1 hover:text-orange-400 transition-colors"
-                    style={{ color: "var(--text-muted)" }}
+                    style={{
+                        display: "flex",
+                        alignItems: "center",
+                        gap: "4px",
+                        color: "var(--text-muted)",
+                        textDecoration: "none",
+                        transition: "color 0.15s",
+                    }}
                 >
-                    <ChevronLeft size={10} />
-                    HOME
+                    <ChevronLeft size={12} />
+                    home
                 </Link>
                 <span>/</span>
                 <Link
                     href={`/category/${encodeURIComponent(post.category)}`}
-                    className="hover:text-cyan-400 transition-colors"
-                    style={{ color: "var(--secondary)" }}
+                    style={{ color: "var(--amber)", textDecoration: "none" }}
                 >
-                    {post.category.toUpperCase()}
+                    {post.category}
                 </Link>
                 <span>/</span>
-                <span style={{ color: "var(--primary)" }}>POST</span>
+                <span style={{ color: "var(--text-faint)" }}>post</span>
             </motion.div>
 
             {/* Post Header */}
             <motion.div
-                initial={{ opacity: 0, y: 20 }}
+                initial={{ opacity: 0, y: 16 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.3 }}
-                className="mb-8 p-6 md:p-8"
                 style={{
+                    marginBottom: "2rem",
+                    padding: "2rem",
                     background: "var(--surface)",
-                    border: "1px solid var(--border-bright)",
-                    boxShadow: "0 0 30px rgba(249,115,22,0.08)",
+                    border: "1px solid var(--border-mid)",
+                    borderRadius: "4px",
+                    borderLeft: "3px solid var(--amber)",
                 }}
             >
                 {/* Category + badges */}
-                <div className="flex flex-wrap items-center gap-3 mb-4">
+                <div style={{ display: "flex", flexWrap: "wrap", alignItems: "center", gap: "8px", marginBottom: "1rem" }}>
                     <Link
                         href={`/category/${encodeURIComponent(post.category)}`}
-                        className="px-2 py-1 transition-all hover:opacity-80"
-                        style={{
-                            fontFamily: "var(--font-pixel)",
-                            fontSize: "6px",
-                            color: "var(--primary)",
-                            border: "1px solid var(--primary)",
-                            background: "rgba(249,115,22,0.1)",
-                        }}
+                        className="tag-mono cat-al"
+                        style={{ border: "1px solid", textDecoration: "none" }}
                     >
                         {post.category}
                     </Link>
                     {post.featured && (
                         <span
-                            className="px-2 py-1"
                             style={{
-                                fontFamily: "var(--font-pixel)",
-                                fontSize: "6px",
-                                color: "var(--accent)",
-                                border: "1px solid var(--accent)",
-                                background: "rgba(250,204,21,0.08)",
+                                fontFamily: "var(--font-mono)",
+                                fontSize: "0.65rem",
+                                color: "var(--amber)",
+                                background: "var(--amber-bg)",
+                                border: "1px solid rgba(240,192,64,0.2)",
+                                borderRadius: "3px",
+                                padding: "2px 8px",
                             }}
                         >
-                            ★ FEATURED
+                            ★ featured
                         </span>
                     )}
                 </div>
 
                 {/* Title */}
                 <h1
-                    className="glow-primary mb-6"
                     style={{
-                        fontFamily: "var(--font-pixel)",
-                        fontSize: "clamp(12px, 2.5vw, 20px)",
-                        color: "var(--primary)",
-                        lineHeight: 1.6,
+                        fontFamily: "var(--font-display)",
+                        fontWeight: 800,
+                        fontSize: "clamp(1.4rem, 3vw, 2.2rem)",
+                        color: "var(--text)",
+                        letterSpacing: "-0.025em",
+                        lineHeight: 1.2,
+                        marginBottom: "1.25rem",
                     }}
                 >
                     {post.title}
@@ -151,40 +159,37 @@ export default function PostPage() {
 
                 {/* Meta row */}
                 <div
-                    className="flex flex-wrap items-center gap-4 mb-4"
                     style={{
+                        display: "flex",
+                        flexWrap: "wrap",
+                        alignItems: "center",
+                        gap: "16px",
                         fontFamily: "var(--font-mono)",
-                        fontSize: "13px",
-                        color: "var(--text-muted)",
+                        fontSize: "0.7rem",
+                        color: "var(--text-faint)",
+                        marginBottom: "1rem",
                     }}
                 >
-                    <span className="flex items-center gap-1">
-                        <Calendar size={12} />
+                    <span style={{ display: "flex", alignItems: "center", gap: "5px" }}>
+                        <Calendar size={11} />
                         {formatDate(post.date)}
                     </span>
-                    <span className="flex items-center gap-1">
-                        <Clock size={12} />
+                    <span style={{ display: "flex", alignItems: "center", gap: "5px" }}>
+                        <Clock size={11} />
                         {post.readTime} min read
                     </span>
                 </div>
 
                 {/* Tags */}
-                <div className="flex flex-wrap gap-2">
+                <div style={{ display: "flex", flexWrap: "wrap", gap: "6px" }}>
                     {post.tags.map((tag) => (
                         <Link
                             key={tag}
                             href={`/search?q=${encodeURIComponent(tag)}`}
-                            className="flex items-center gap-1 px-2 py-1 transition-all hover:border-cyan-400"
-                            style={{
-                                fontFamily: "var(--font-mono)",
-                                fontSize: "11px",
-                                color: "var(--secondary)",
-                                border: "1px solid var(--border)",
-                                background: "var(--surface2)",
-                            }}
+                            className="tag-mono"
+                            style={{ textDecoration: "none" }}
                         >
-                            <Tag size={8} />
-                            {tag}
+                            #{tag}
                         </Link>
                     ))}
                 </div>
@@ -192,52 +197,52 @@ export default function PostPage() {
 
             {/* Post Body */}
             <motion.div
-                initial={{ opacity: 0, y: 20 }}
+                initial={{ opacity: 0, y: 16 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.3, delay: 0.1 }}
-                className="mb-8 p-6 md:p-8"
                 style={{
+                    marginBottom: "2rem",
+                    padding: "2rem",
                     background: "var(--surface)",
                     border: "1px solid var(--border)",
+                    borderRadius: "4px",
                 }}
             >
                 <div className="prose-retro">
-                    <ReactMarkdown remarkPlugins={[remarkGfm]}>
-                        {post.body}
-                    </ReactMarkdown>
+                    <ReactMarkdown remarkPlugins={[remarkGfm]}>{post.body}</ReactMarkdown>
                 </div>
             </motion.div>
 
             {/* Prev/Next navigation */}
-            <PixelDivider label="MORE POSTS" color="secondary" />
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <PixelDivider label="MORE POSTS" />
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))", gap: "1px", border: "1px solid var(--border)", borderRadius: "4px", overflow: "hidden" }}>
                 {prevPost && (
-                    <Link href={`/post/${prevPost.slug}`} className="group">
+                    <Link href={`/post/${prevPost.slug}`} style={{ textDecoration: "none" }}>
                         <div
-                            className="p-4 transition-all h-full"
-                            style={{
-                                background: "var(--surface)",
-                                border: "1px solid var(--border)",
-                            }}
+                            className="card-code"
+                            style={{ padding: "1.25rem", height: "100%", borderRadius: 0, border: "none" }}
                         >
                             <div
-                                className="flex items-center gap-2 mb-2"
                                 style={{
-                                    fontFamily: "var(--font-pixel)",
-                                    fontSize: "7px",
-                                    color: "var(--text-muted)",
+                                    display: "flex",
+                                    alignItems: "center",
+                                    gap: "6px",
+                                    fontFamily: "var(--font-mono)",
+                                    fontSize: "0.65rem",
+                                    color: "var(--text-faint)",
+                                    marginBottom: "0.5rem",
                                 }}
                             >
                                 <ArrowLeft size={10} />
-                                OLDER POST
+                                older post
                             </div>
                             <div
-                                className="group-hover:text-orange-400 transition-colors"
                                 style={{
-                                    fontFamily: "var(--font-pixel)",
-                                    fontSize: "8px",
-                                    color: "var(--text)",
-                                    lineHeight: 1.6,
+                                    fontFamily: "var(--font-display)",
+                                    fontWeight: 700,
+                                    fontSize: "0.85rem",
+                                    color: "var(--text-dim)",
+                                    lineHeight: 1.4,
                                 }}
                             >
                                 {prevPost.title}
@@ -246,32 +251,33 @@ export default function PostPage() {
                     </Link>
                 )}
                 {nextPost && (
-                    <Link href={`/post/${nextPost.slug}`} className="group md:text-right">
+                    <Link href={`/post/${nextPost.slug}`} style={{ textDecoration: "none" }}>
                         <div
-                            className="p-4 transition-all h-full"
-                            style={{
-                                background: "var(--surface)",
-                                border: "1px solid var(--border)",
-                            }}
+                            className="card-code"
+                            style={{ padding: "1.25rem", height: "100%", borderRadius: 0, border: "none", textAlign: "right" }}
                         >
                             <div
-                                className="flex items-center justify-end gap-2 mb-2"
                                 style={{
-                                    fontFamily: "var(--font-pixel)",
-                                    fontSize: "7px",
-                                    color: "var(--text-muted)",
+                                    display: "flex",
+                                    alignItems: "center",
+                                    justifyContent: "flex-end",
+                                    gap: "6px",
+                                    fontFamily: "var(--font-mono)",
+                                    fontSize: "0.65rem",
+                                    color: "var(--text-faint)",
+                                    marginBottom: "0.5rem",
                                 }}
                             >
-                                NEWER POST
+                                newer post
                                 <ArrowRight size={10} />
                             </div>
                             <div
-                                className="group-hover:text-orange-400 transition-colors"
                                 style={{
-                                    fontFamily: "var(--font-pixel)",
-                                    fontSize: "8px",
-                                    color: "var(--text)",
-                                    lineHeight: 1.6,
+                                    fontFamily: "var(--font-display)",
+                                    fontWeight: 700,
+                                    fontSize: "0.85rem",
+                                    color: "var(--text-dim)",
+                                    lineHeight: 1.4,
                                 }}
                             >
                                 {nextPost.title}

@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import Link from "next/link";
-import { ArrowRight, Zap, Database } from "lucide-react";
+import { ArrowRight, BookOpen, Layers } from "lucide-react";
 import PostGrid from "@/components/PostGrid";
 import Sidebar from "@/components/Sidebar";
 import PixelDivider from "@/components/PixelDivider";
@@ -25,190 +25,140 @@ export default function HomePage() {
   if (loading) {
     return (
       <div
-        className="flex flex-col items-center justify-center min-h-screen gap-6"
-        style={{ color: "var(--primary)" }}
+        style={{
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+          justifyContent: "center",
+          minHeight: "100vh",
+          gap: "0.5rem",
+        }}
       >
         <div
           className="loading-pulse"
           style={{
-            fontFamily: "var(--font-pixel)",
-            fontSize: "12px",
+            fontFamily: "var(--font-mono)",
+            fontSize: "0.7rem",
+            color: "var(--amber)",
           }}
         >
-          LOADING KNOWLEDGE BASE...
-        </div>
-        <div
-          style={{
-            fontFamily: "var(--font-terminal)",
-            fontSize: "20px",
-            color: "var(--text-muted)",
-          }}
-        >
-          &gt; Fetching records from database_
+          {"// loading posts..."}
         </div>
       </div>
     );
   }
 
   return (
-    <div className="max-w-7xl mx-auto px-4 py-8">
-      {/* Hero Banner */}
+    <div style={{ maxWidth: "1280px", margin: "0 auto", padding: "3rem 1.5rem" }}>
+
+      {/* Hero */}
       <motion.div
-        initial={{ opacity: 0, y: -20 }}
+        initial={{ opacity: 0, y: 16 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.4 }}
-        className="relative mb-10 p-6 md:p-10 overflow-hidden"
-        style={{
-          background: "linear-gradient(135deg, var(--surface) 0%, #0f1e3a 100%)",
-          border: "1px solid var(--border-bright)",
-          boxShadow: "0 0 40px rgba(249,115,22,0.1)",
-        }}
+        transition={{ duration: 0.35 }}
+        style={{ marginBottom: "4rem" }}
       >
-        {/* Decorative scanline inside hero */}
+        {/* Comment label */}
         <div
-          className="absolute inset-0 pointer-events-none opacity-20"
           style={{
-            backgroundImage:
-              "repeating-linear-gradient(to bottom, transparent 0px, transparent 3px, rgba(249,115,22,0.05) 3px, rgba(249,115,22,0.05) 4px)",
-          }}
-        />
-
-        {/* Corner decorations */}
-        <span
-          className="absolute top-3 left-3"
-          style={{
-            fontFamily: "var(--font-pixel)",
-            fontSize: "8px",
-            color: "var(--primary)",
-            opacity: 0.5,
+            fontFamily: "var(--font-mono)",
+            fontSize: "0.7rem",
+            color: "var(--amber)",
+            marginBottom: "1.25rem",
           }}
         >
-          ▮
-        </span>
-        <span
-          className="absolute bottom-3 right-3"
+          {"/* welcome */"}
+        </div>
+
+        <h1
           style={{
-            fontFamily: "var(--font-pixel)",
-            fontSize: "8px",
-            color: "var(--primary)",
-            opacity: 0.5,
+            fontFamily: "var(--font-display)",
+            fontWeight: 800,
+            fontSize: "clamp(2rem, 5vw, 3.5rem)",
+            color: "var(--text)",
+            letterSpacing: "-0.03em",
+            lineHeight: 1.1,
+            marginBottom: "1.25rem",
           }}
         >
-          ▮
-        </span>
-
-        <div className="relative z-10 flex flex-col md:flex-row items-start md:items-center gap-8">
-          <div className="flex-1">
-            <div
-              className="mb-3"
-              style={{
-                fontFamily: "var(--font-pixel)",
-                fontSize: "8px",
-                color: "var(--secondary)",
-                letterSpacing: "2px",
-              }}
-            >
-              &gt;&gt; WELCOME TO THE TERMINAL
-            </div>
-            <h1
-              className="glow-primary mb-4"
-              style={{
-                fontFamily: "var(--font-pixel)",
-                fontSize: "clamp(14px, 3vw, 24px)",
-                color: "var(--primary)",
-                lineHeight: 1.5,
-              }}
-            >
-              BC.KNOWLEDGE
-              <span
-                className="cursor-blink"
-                style={{ color: "var(--secondary)", display: "inline" }}
-              />
-            </h1>
-            <p
-              className="mb-6 max-w-2xl"
-              style={{
-                fontFamily: "var(--font-mono)",
-                fontSize: "16px",
-                color: "var(--text-muted)",
-                lineHeight: 1.7,
-              }}
-            >
-              An AL Developer&apos;s personal knowledge base — tutorials,
-              patterns, tips, and deep dives on Business Central & Dynamics 365
-              development.
-            </p>
-            <div className="flex flex-wrap gap-3">
-              <Link
-                href="/search"
-                className="flex items-center gap-2 px-4 py-2 transition-all hover:shadow-lg"
-                style={{
-                  fontFamily: "var(--font-pixel)",
-                  fontSize: "8px",
-                  color: "var(--bg)",
-                  background: "var(--primary)",
-                  boxShadow: "0 0 12px var(--primary-glow)",
-                }}
-              >
-                <Zap size={10} />
-                SEARCH POSTS
-                <ArrowRight size={10} />
-              </Link>
-              <Link
-                href="/category/AL Development"
-                className="flex items-center gap-2 px-4 py-2 transition-all"
-                style={{
-                  fontFamily: "var(--font-pixel)",
-                  fontSize: "8px",
-                  color: "var(--secondary)",
-                  border: "1px solid var(--secondary)",
-                  background: "rgba(34,211,238,0.05)",
-                }}
-              >
-                <Database size={10} />
-                BROWSE AL DEV
-              </Link>
-            </div>
-          </div>
-
-          {/* Stats */}
-          <div
-            className="flex flex-row md:flex-col gap-4"
+          The AL Developer&apos;s{" "}
+          <span
             style={{
-              fontFamily: "var(--font-pixel)",
-              fontSize: "7px",
-              color: "var(--text-muted)",
+              color: "var(--amber)",
+              position: "relative",
+              display: "inline-block",
             }}
           >
-            {[
-              { label: "POSTS", value: posts.length, color: "var(--primary)" },
-              {
-                label: "FEATURED",
-                value: getFeaturedPosts(posts).length,
-                color: "var(--accent)",
-              },
-              {
-                label: "STATUS",
-                value: "ONLINE",
-                color: "var(--green)",
-              },
-            ].map(({ label, value, color }) => (
+            Knowledgebase
+          </span>
+        </h1>
+
+        <p
+          style={{
+            fontFamily: "var(--font-mono)",
+            fontSize: "0.875rem",
+            color: "var(--text-muted)",
+            lineHeight: 1.75,
+            maxWidth: "560px",
+            marginBottom: "2rem",
+          }}
+        >
+          Tutorials, patterns, tips, and deep dives on Business Central &amp; Dynamics
+          365 AL development. Built for developers, by a developer.
+        </p>
+
+        {/* CTA buttons */}
+        <div style={{ display: "flex", flexWrap: "wrap", gap: "10px", marginBottom: "3rem" }}>
+          <Link href="/search" className="btn-amber">
+            <BookOpen size={14} />
+            Browse Posts
+            <ArrowRight size={13} />
+          </Link>
+          <Link href="/category/AL Development" className="btn-outline">
+            <Layers size={14} />
+            AL Development
+          </Link>
+        </div>
+
+        {/* Stats */}
+        <div style={{ display: "flex", flexWrap: "wrap", gap: "1px", border: "1px solid var(--border)", borderRadius: "4px", overflow: "hidden" }}>
+          {[
+            { label: "posts", value: posts.length, color: "var(--amber)" },
+            { label: "featured", value: getFeaturedPosts(posts).length, color: "var(--green)" },
+            { label: "status", value: "online", color: "var(--green)" },
+          ].map(({ label, value, color }) => (
+            <div
+              key={label}
+              style={{
+                flex: "1 1 120px",
+                padding: "1rem 1.25rem",
+                background: "var(--surface)",
+                borderRight: "1px solid var(--border)",
+              }}
+            >
               <div
-                key={label}
-                className="text-center p-3 border"
                 style={{
-                  borderColor: "var(--border)",
-                  background: "var(--bg)",
-                  minWidth: "80px",
+                  fontFamily: "var(--font-display)",
+                  fontWeight: 700,
+                  fontSize: "1.5rem",
+                  color,
+                  letterSpacing: "-0.02em",
+                  marginBottom: "2px",
                 }}
               >
-                <div style={{ color, fontSize: "14px", marginBottom: "4px" }}>
-                  {value}
-                </div>
-                <div>{label}</div>
+                {value}
               </div>
-            ))}
-          </div>
+              <div
+                style={{
+                  fontFamily: "var(--font-mono)",
+                  fontSize: "0.62rem",
+                  color: "var(--text-faint)",
+                }}
+              >
+                {label}
+              </div>
+            </div>
+          ))}
         </div>
       </motion.div>
 
@@ -217,90 +167,100 @@ export default function HomePage() {
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          transition={{ delay: 0.2 }}
-          className="mb-8"
+          transition={{ delay: 0.15 }}
+          style={{ marginBottom: "3rem" }}
         >
           <PixelDivider label="FEATURED POST" />
-          <Link href={`/post/${featured.slug}`} className="block group">
+          <Link href={`/post/${featured.slug}`} style={{ textDecoration: "none", display: "block" }}>
             <div
-              className="card-scan pixel-corner p-6 md:p-8 transition-all"
-              style={{
-                background: "var(--surface)",
-                border: "1px solid var(--border-bright)",
-              }}
+              className="card-code"
+              style={{ padding: "2rem" }}
             >
-              <div className="flex flex-wrap items-center gap-3 mb-3">
+              <div style={{ display: "flex", flexWrap: "wrap", alignItems: "center", gap: "8px", marginBottom: "0.75rem" }}>
                 <span
-                  className="px-2 py-1"
                   style={{
-                    fontFamily: "var(--font-pixel)",
-                    fontSize: "6px",
-                    color: "var(--primary)",
-                    border: "1px solid var(--primary)",
-                    background: "rgba(249,115,22,0.1)",
+                    fontFamily: "var(--font-mono)",
+                    fontSize: "0.65rem",
+                    color: "var(--amber)",
+                    background: "var(--amber-bg)",
+                    border: "1px solid rgba(240,192,64,0.2)",
+                    borderRadius: "3px",
+                    padding: "2px 8px",
                   }}
                 >
-                  ★ FEATURED
+                  ★ featured
                 </span>
                 <span
-                  className="px-2 py-1"
                   style={{
-                    fontFamily: "var(--font-pixel)",
-                    fontSize: "6px",
-                    color: "var(--secondary)",
-                    border: "1px solid var(--secondary)",
-                    background: "rgba(34,211,238,0.08)",
+                    fontFamily: "var(--font-mono)",
+                    fontSize: "0.65rem",
+                    color: "var(--text-faint)",
                   }}
                 >
                   {featured.category}
                 </span>
               </div>
               <h2
-                className="mb-3 group-hover:text-orange-400 transition-colors"
                 style={{
-                  fontFamily: "var(--font-pixel)",
-                  fontSize: "clamp(11px, 2vw, 16px)",
+                  fontFamily: "var(--font-display)",
+                  fontWeight: 800,
+                  fontSize: "clamp(1.1rem, 2.5vw, 1.6rem)",
                   color: "var(--text)",
-                  lineHeight: 1.6,
+                  letterSpacing: "-0.02em",
+                  lineHeight: 1.25,
+                  marginBottom: "0.75rem",
                 }}
               >
                 {featured.title}
               </h2>
               <p
-                className="mb-4"
                 style={{
                   fontFamily: "var(--font-mono)",
-                  fontSize: "15px",
+                  fontSize: "0.82rem",
                   color: "var(--text-muted)",
-                  maxWidth: "700px",
+                  maxWidth: "680px",
+                  lineHeight: 1.7,
+                  marginBottom: "1.25rem",
                 }}
               >
                 {featured.excerpt}
               </p>
               <span
-                className="flex items-center gap-2"
                 style={{
-                  fontFamily: "var(--font-pixel)",
-                  fontSize: "8px",
-                  color: "var(--primary)",
+                  display: "inline-flex",
+                  alignItems: "center",
+                  gap: "6px",
+                  fontFamily: "var(--font-mono)",
+                  fontSize: "0.75rem",
+                  color: "var(--amber)",
                 }}
               >
-                READ FULL POST <ArrowRight size={10} />
+                read() <ArrowRight size={13} />
               </span>
             </div>
           </Link>
         </motion.div>
       )}
 
-      {/* Main content grid */}
+      {/* All Posts */}
       <PixelDivider label="ALL POSTS" />
-      <div className="flex flex-col lg:flex-row gap-6">
-        {/* Posts */}
-        <div className="flex-1 min-w-0">
+      <div
+        style={{
+          display: "flex",
+          flexDirection: "column",
+          gap: "1.5rem",
+        }}
+        className="lg:flex-row"
+      >
+        {/* Grid */}
+        <div style={{ flex: 1, minWidth: 0 }}>
           <PostGrid posts={posts} />
         </div>
         {/* Sidebar */}
-        <div className="w-full lg:w-72 xl:w-80 flex-shrink-0">
+        <div
+          style={{ width: "100%", flexShrink: 0 }}
+          className="lg:w-72 xl:w-80"
+        >
           <Sidebar posts={posts} />
         </div>
       </div>

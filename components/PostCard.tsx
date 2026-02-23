@@ -2,82 +2,95 @@
 
 import Link from "next/link";
 import { motion } from "framer-motion";
-import { Clock, Tag, ArrowRight, Star } from "lucide-react";
+import { Clock, ArrowRight, Star } from "lucide-react";
 import { Post, formatDate } from "@/lib/posts";
 
 interface PostCardProps {
     post: Post;
+    index?: number;
     featured?: boolean;
 }
 
-export default function PostCard({ post, featured = false }: PostCardProps) {
-    const categoryColors: Record<string, string> = {
-        "AL Development": "var(--primary)",
-        Performance: "var(--secondary)",
-        Integrations: "var(--accent)",
-        DevOps: "var(--green)",
-        "Best Practices": "var(--secondary)",
-    };
+const CATEGORY_CLASSES: Record<string, string> = {
+    "AL Development": "cat-al",
+    Performance: "cat-perf",
+    Integrations: "cat-int",
+    DevOps: "cat-devops",
+    "Best Practices": "cat-best",
+};
 
-    const catColor = categoryColors[post.category] || "var(--text-muted)";
+export default function PostCard({ post, index, featured = false }: PostCardProps) {
+    const catClass = CATEGORY_CLASSES[post.category] || "cat-default";
 
     return (
         <motion.div
-            initial={{ opacity: 0, y: 20 }}
+            initial={{ opacity: 0, y: 16 }}
             animate={{ opacity: 1, y: 0 }}
-            whileHover={{ y: -3 }}
-            transition={{ duration: 0.2 }}
+            transition={{ duration: 0.25, delay: (index ?? 0) * 0.05 }}
+            style={{ height: "100%" }}
         >
-            <Link href={`/post/${post.slug}`} className="block h-full group">
+            <Link href={`/post/${post.slug}`} style={{ display: "block", height: "100%", textDecoration: "none" }}>
                 <article
-                    className="card-scan pixel-corner h-full flex flex-col p-5 transition-all duration-200"
+                    className="card-code"
                     style={{
-                        background: "var(--surface)",
-                        border: "1px solid var(--border)",
-                        position: "relative",
+                        height: "100%",
+                        display: "flex",
+                        flexDirection: "column",
+                        padding: "1.25rem",
                     }}
                 >
-                    {/* Hover border glow */}
+                    {/* Header */}
                     <div
-                        className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none"
                         style={{
-                            border: `1px solid ${catColor}`,
-                            boxShadow: `0 0 15px ${catColor}22, inset 0 0 15px ${catColor}08`,
+                            display: "flex",
+                            alignItems: "flex-start",
+                            justifyContent: "space-between",
+                            gap: "8px",
+                            marginBottom: "0.75rem",
                         }}
-                    />
-
-                    {/* Header row */}
-                    <div className="flex items-start justify-between gap-2 mb-3">
-                        <span
-                            className="text-xs px-2 py-1 border"
-                            style={{
-                                fontFamily: "var(--font-pixel)",
-                                fontSize: "6px",
-                                color: catColor,
-                                borderColor: catColor,
-                                background: `${catColor}15`,
-                                letterSpacing: "0.5px",
-                            }}
-                        >
-                            {post.category}
-                        </span>
+                    >
+                        <div style={{ display: "flex", alignItems: "center", gap: "8px", flexWrap: "wrap" }}>
+                            {/* Index prefix (ctxdc style) */}
+                            {index !== undefined && (
+                                <span
+                                    style={{
+                                        fontFamily: "var(--font-mono)",
+                                        fontSize: "0.62rem",
+                                        color: "var(--text-faint)",
+                                    }}
+                                >
+                                    {"["}
+                                    {String(index + 1).padStart(2, "0")}
+                                    {"]"}
+                                </span>
+                            )}
+                            <span
+                                className={`tag-mono ${catClass}`}
+                                style={{ border: "1px solid" }}
+                            >
+                                {post.category}
+                            </span>
+                        </div>
                         {post.featured && (
                             <Star
                                 size={12}
-                                fill="var(--accent)"
-                                style={{ color: "var(--accent)", flexShrink: 0 }}
+                                fill="var(--amber)"
+                                style={{ color: "var(--amber)", flexShrink: 0 }}
                             />
                         )}
                     </div>
 
                     {/* Title */}
                     <h2
-                        className="mb-2 group-hover:text-orange-400 transition-colors"
                         style={{
-                            fontFamily: "var(--font-pixel)",
-                            fontSize: featured ? "12px" : "9px",
+                            fontFamily: "var(--font-display)",
+                            fontWeight: 700,
+                            fontSize: featured ? "1.05rem" : "0.9rem",
                             color: "var(--text)",
-                            lineHeight: 1.6,
+                            lineHeight: 1.35,
+                            marginBottom: "0.6rem",
+                            letterSpacing: "-0.01em",
+                            transition: "color 0.15s",
                         }}
                     >
                         {post.title}
@@ -85,65 +98,71 @@ export default function PostCard({ post, featured = false }: PostCardProps) {
 
                     {/* Excerpt */}
                     <p
-                        className="flex-1 mb-4 text-sm"
                         style={{
-                            color: "var(--text-muted)",
+                            flex: 1,
                             fontFamily: "var(--font-mono)",
+                            fontSize: "0.78rem",
+                            color: "var(--text-muted)",
                             lineHeight: 1.6,
-                            fontSize: "0.85rem",
+                            marginBottom: "1rem",
                         }}
                     >
                         {post.excerpt}
                     </p>
 
                     {/* Tags */}
-                    <div className="flex flex-wrap gap-1 mb-3">
+                    <div style={{ display: "flex", flexWrap: "wrap", gap: "6px", marginBottom: "0.75rem" }}>
                         {post.tags.slice(0, 3).map((tag) => (
                             <span
                                 key={tag}
-                                className="flex items-center gap-1"
                                 style={{
                                     fontFamily: "var(--font-mono)",
-                                    fontSize: "11px",
-                                    color: "var(--secondary)",
-                                    opacity: 0.8,
+                                    fontSize: "0.62rem",
+                                    color: "var(--text-faint)",
                                 }}
                             >
-                                <Tag size={8} />
-                                {tag}
+                                #{tag}
                             </span>
                         ))}
                     </div>
 
                     {/* Footer */}
                     <div
-                        className="flex items-center justify-between pt-3 border-t"
-                        style={{ borderColor: "var(--border)" }}
+                        style={{
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "space-between",
+                            paddingTop: "0.75rem",
+                            borderTop: "1px solid var(--border)",
+                        }}
                     >
                         <div
-                            className="flex items-center gap-3"
                             style={{
+                                display: "flex",
+                                alignItems: "center",
+                                gap: "12px",
                                 fontFamily: "var(--font-mono)",
-                                fontSize: "11px",
-                                color: "var(--text-muted)",
+                                fontSize: "0.68rem",
+                                color: "var(--text-faint)",
                             }}
                         >
                             <span>{formatDate(post.date)}</span>
-                            <span className="flex items-center gap-1">
+                            <span style={{ display: "flex", alignItems: "center", gap: "4px" }}>
                                 <Clock size={10} />
                                 {post.readTime}m
                             </span>
                         </div>
                         <span
-                            className="flex items-center gap-1 group-hover:gap-2 transition-all"
                             style={{
-                                fontFamily: "var(--font-pixel)",
-                                fontSize: "7px",
-                                color: "var(--primary)",
+                                display: "flex",
+                                alignItems: "center",
+                                gap: "4px",
+                                fontFamily: "var(--font-mono)",
+                                fontSize: "0.68rem",
+                                color: "var(--amber)",
                             }}
                         >
-                            READ
-                            <ArrowRight size={10} />
+                            read() <ArrowRight size={10} />
                         </span>
                     </div>
                 </article>

@@ -1,9 +1,8 @@
 "use client";
 
 import { useState, useEffect, Suspense } from "react";
-import { useSearchParams, useRouter } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 import { motion } from "framer-motion";
-import { Search } from "lucide-react";
 import PostGrid from "@/components/PostGrid";
 import Sidebar from "@/components/Sidebar";
 import PixelDivider from "@/components/PixelDivider";
@@ -12,7 +11,6 @@ import { Post, fetchPosts, searchPosts, sortByDate } from "@/lib/posts";
 
 function SearchContent() {
     const searchParams = useSearchParams();
-    const router = useRouter();
     const query = searchParams?.get("q") || "";
 
     const [allPosts, setAllPosts] = useState<Post[]>([]);
@@ -32,61 +30,64 @@ function SearchContent() {
         return (
             <div
                 className="flex items-center justify-center min-h-[50vh]"
-                style={{
-                    fontFamily: "var(--font-pixel)",
-                    fontSize: "10px",
-                    color: "var(--primary)",
-                }}
+                style={{ fontFamily: "var(--font-mono)", fontSize: "0.7rem", color: "var(--amber)" }}
             >
-                SEARCHING...
+                {"// searching..."}
             </div>
         );
     }
 
     return (
-        <div className="max-w-7xl mx-auto px-4 py-8">
+        <div style={{ maxWidth: "1280px", margin: "0 auto", padding: "2.5rem 1.5rem" }}>
             {/* Header */}
             <motion.div
-                initial={{ opacity: 0, y: -20 }}
+                initial={{ opacity: 0, y: 12 }}
                 animate={{ opacity: 1, y: 0 }}
-                className="mb-6 p-6"
-                style={{
-                    background: "var(--surface)",
-                    border: "1px solid var(--border-bright)",
-                }}
+                style={{ marginBottom: "2rem" }}
             >
                 <div
-                    className="flex items-center gap-3 mb-4"
                     style={{
-                        fontFamily: "var(--font-pixel)",
-                        fontSize: "7px",
-                        color: "var(--accent)",
+                        fontFamily: "var(--font-mono)",
+                        fontSize: "0.7rem",
+                        color: "var(--amber)",
+                        marginBottom: "1rem",
                     }}
                 >
-                    <Search size={12} />
-                    SEARCH TERMINAL
+                    {"/* search */"}
                 </div>
+                <h1
+                    style={{
+                        fontFamily: "var(--font-display)",
+                        fontWeight: 800,
+                        fontSize: "clamp(1.6rem, 4vw, 2.5rem)",
+                        color: "var(--text)",
+                        letterSpacing: "-0.025em",
+                        marginBottom: "1.5rem",
+                    }}
+                >
+                    Search Posts
+                </h1>
                 <SearchBar />
                 {query && (
                     <div
-                        className="mt-3"
                         style={{
+                            marginTop: "0.75rem",
                             fontFamily: "var(--font-mono)",
-                            fontSize: "14px",
+                            fontSize: "0.75rem",
                             color: "var(--text-muted)",
                         }}
                     >
-                        &gt; query:{" "}
-                        <span style={{ color: "var(--accent)" }}>&quot;{query}&quot;</span>{" "}
-                        — {results.length} result{results.length !== 1 ? "s" : ""} found
+                        {">"} query:{" "}
+                        <span style={{ color: "var(--amber)" }}>&quot;{query}&quot;</span>
+                        {" "}— {results.length} result{results.length !== 1 ? "s" : ""} found
                     </div>
                 )}
             </motion.div>
 
-            <PixelDivider label="RESULTS" color="accent" />
+            <PixelDivider label={query ? `results for "${query}"` : "ALL POSTS"} />
 
             <div className="flex flex-col lg:flex-row gap-6">
-                <div className="flex-1 min-w-0">
+                <div style={{ flex: 1, minWidth: 0 }}>
                     <PostGrid posts={results} />
                 </div>
                 <div className="w-full lg:w-72 xl:w-80 flex-shrink-0">
@@ -103,13 +104,9 @@ export default function SearchPage() {
             fallback={
                 <div
                     className="flex items-center justify-center min-h-screen"
-                    style={{
-                        fontFamily: "var(--font-pixel)",
-                        fontSize: "10px",
-                        color: "var(--primary)",
-                    }}
+                    style={{ fontFamily: "var(--font-mono)", fontSize: "0.7rem", color: "var(--amber)" }}
                 >
-                    LOADING...
+                    {"// loading..."}
                 </div>
             }
         >
