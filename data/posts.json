@@ -1,15 +1,92 @@
 [
   {
-    "id": "1",
-    "title": "Getting Started with AL Development in Business Central",
-    "slug": "getting-started-al-development-business-central",
+    "id": "1771875550440",
+    "title": "Add \"Import Markdown\" Feature to Admin Editor",
+    "slug": "add-import-markdown-feature-to-admin-editor",
     "category": "AL Development",
-    "tags": ["AL", "Business Central", "Getting Started", "VS Code"],
-    "excerpt": "A comprehensive guide to setting up your AL development environment and writing your first extension for Microsoft Dynamics 365 Business Central.",
-    "body": "# Getting Started with AL Development in Business Central\n\nMicrosoft Dynamics 365 Business Central uses the **AL programming language** for all customizations and extensions. This guide walks you through setting up your environment and writing your first extension.\n\n## Prerequisites\n\nBefore you begin, you'll need:\n- **VS Code** with the AL Language extension\n- **Business Central sandbox** environment (or Docker container)\n- Basic understanding of object-oriented programming\n\n## Setting Up Your Environment\n\n### 1. Install VS Code Extensions\n\nInstall the following VS Code extensions:\n```bash\n# Search in VS Code marketplace:\n- AL Language (by Microsoft)\n- AZ AL Dev Tools/AL Code Outline\n- CRS AL Language Extension\n```\n\n### 2. Configure launch.json\n\n```json\n{\n  \"version\": \"0.2.0\",\n  \"configurations\": [\n    {\n      \"type\": \"al\",\n      \"request\": \"launch\",\n      \"name\": \"Your own server\",\n      \"server\": \"https://yourtenant.dynamics.com\",\n      \"tenant\": \"your-tenant-id\",\n      \"authentication\": \"AAD\"\n    }\n  ]\n}\n```\n\n## Your First AL Object\n\nHere's a simple table extension to get you started:\n\n```al\ntableextension 50100 \"MyCustomer Extension\" extends Customer\n{\n  fields\n  {\n    field(50100; \"Custom Field\"; Text[100])\n    {\n      Caption = 'Custom Field';\n      DataClassification = CustomerContent;\n    }\n  }\n}\n```\n\n## Key Concepts\n\n- **Object IDs**: Always use IDs in the 50000-99999 range for custom objects\n- **Data Classification**: Always set this for GDPR compliance\n- **Event-driven**: Use events for extensibility rather than modifying base objects\n\n## Next Steps\n\nOnce you're comfortable with basic objects, explore:\n1. Page extensions and page customizations\n2. Codeunits for business logic\n3. Report extensions\n4. API pages for integrations",
+    "tags": [],
+    "excerpt": "When creating a new post, you currently have to manually fill in every field (title, slug, tags, body, etc.). This feature adds an **\"Import .md\"** button that lets you paste or upload a raw markdown ",
+    "body": "# Add \"Import Markdown\" Feature to Admin Editor\n\nWhen creating a new post, you currently have to manually fill in every field (title, slug, tags, body, etc.). This feature adds an **\"Import .md\"** button that lets you paste or upload a raw markdown file and have it auto-populate the editor form.\n\n## How It Works\n\n1. A new **\"import .md\"** button appears in the AdminEditor header (next to the preview toggle) when creating a new post\n2. Clicking it opens a small modal with a textarea where you paste your [.md](file:///c:/Users/ahmed/OneDrive/Documents/GitHub/myweb/SETUP.md) file content\n3. The parser extracts:\n   - **Title** → from the first `# heading`\n   - **Body** → the full markdown content\n   - **Excerpt** → first paragraph after the title (auto-truncated to ~200 chars)\n   - **Slug** → auto-generated from the title\n   - **Read time** → estimated from word count (~200 words/min)\n4. You review/adjust the auto-filled fields (category, tags, etc.), then save as normal\n\n## Proposed Changes\n\n### AdminEditor Component\n\n#### [MODIFY] [AdminEditor.tsx](file:///c:/Users/ahmed/OneDrive/Documents/GitHub/myweb/components/AdminEditor.tsx)\n\n- Add `FileUp` icon import from lucide-react\n- Add `showImport` state toggle\n- Add `handleImportMarkdown(mdText: string)` function that parses the markdown and fills the form:\n  - Extracts title from first `# ` line\n  - Sets body to the full markdown text\n  - Auto-generates slug, excerpt, and read time\n- Add an **\"import .md\"** button in the modal header (visible only for new posts)\n- Add a collapsible import panel with a textarea + \"apply\" button, shown when `showImport` is true\n\nNo new files or dependencies needed — this is a self-contained addition to the existing component.\n\n## Verification Plan\n\n### Manual Verification\n1. Run `npm run dev` and go to `http://localhost:3000/admin`\n2. Log in with GitHub credentials\n3. Click **\"new post\"**\n4. Click **\"import .md\"** button in the editor header\n5. Paste the contents of [bc-restore-production-license-fix.md.resolved](file:///c:/Users/ahmed/OneDrive/Documents/GitHub/myweb/bc-restore-production-license-fix.md.resolved) into the import textarea\n6. Click \"apply\" — verify the title, slug, excerpt, body, and read time fields are auto-filled\n7. Adjust category/tags as needed, then save",
+    "published": false,
+    "date": "2026-02-23",
+    "readTime": 2,
+    "featured": false
+  },
+  {
+    "id": "6",
+    "title": "Error Handling and Telemetry in Business Central Extensions",
+    "slug": "error-handling-telemetry-business-central",
+    "category": "Best Practices",
+    "tags": [
+      "AL",
+      "Error Handling",
+      "Telemetry",
+      "TryFunction",
+      "Business Central"
+    ],
+    "excerpt": "Master robust error handling with TryFunctions, error labels, and custom telemetry to make your BC extensions production-ready.",
+    "body": "# Error Handling and Telemetry in Business Central Extensions\n\nProduction-ready BC extensions need robust error handling and observability. Let's look at the right patterns.\n\n## TryFunctions â Your Error Safety Net\n\n```al\nprocedure ProcessExternalData(DataJson: Text): Boolean\nvar\n  ErrorText: Text;\n  ProcessFailedLbl: Label 'External data processing failed: %1',\n    Comment = '%1 = Error details';\nbegin\n  if not TryParseAndProcess(DataJson) then begin\n    ErrorText := GetLastErrorText();\n    Message(ProcessFailedLbl, ErrorText);\n    exit(false);\n  end;\n  exit(true);\nend;\n\n[TryFunction]\nlocal procedure TryParseAndProcess(DataJson: Text)\nvar\n  JObject: JsonObject;\nbegin\n  JObject.ReadFrom(DataJson);\n  // Throws inside TryFunction = caught gracefully above\n  ProcessJsonData(JObject);\nend;\n```\n\n## Always Use Error Labels\n\n```al\n// BAD - Hardcoded strings\nError('Customer not found');\n\n// GOOD - Label variables for localization & consistency\nvar\n  CustomerNotFoundErr: Label 'Customer %1 was not found in the system.',\n    Comment = '%1 = Customer number';\nbegin\n  Error(CustomerNotFoundErr, CustomerNo);\nend;\n```\n\n## Custom Telemetry with Session.LogMessage\n\n```al\nprocedure PostSalesDocument(var SalesHeader: Record \"Sales Header\")\nvar\n  CustomDimensions: Dictionary of [Text, Text];\n  PostedSuccessMsg: Label 'Sales document posted', Locked = true;\n  PostFailedMsg: Label 'Sales document posting failed', Locked = true;\nbegin\n  CustomDimensions.Add('DocumentType', Format(SalesHeader.\"Document Type\"));\n  CustomDimensions.Add('CustomerNo', SalesHeader.\"Sell-to Customer No.\");\n  \n  if TryPostSalesDocument(SalesHeader) then\n    Session.LogMessage('POST001', PostedSuccessMsg,\n      Verbosity::Normal, DataClassification::SystemMetadata,\n      TelemetryScope::ExtensionPublisher, CustomDimensions)\n  else begin\n    CustomDimensions.Add('Error', GetLastErrorText());\n    Session.LogMessage('POST002', PostFailedMsg,\n      Verbosity::Error, DataClassification::SystemMetadata,\n      TelemetryScope::ExtensionPublisher, CustomDimensions);\n  end;\nend;\n```\n\n## Connecting to Azure Application Insights\n\nAdd to your `app.json`:\n```json\n{\n  \"applicationInsightsKey\": \"your-instrumentation-key-here\"\n}\n```\n\nThen filter your telemetry in Azure Monitor:\n```kusto\ntraces\n| where customDimensions.extensionPublisher == 'YourCompany'\n| where message startswith 'POST'\n| project timestamp, message, customDimensions\n| order by timestamp desc\n```",
     "published": true,
-    "date": "2026-01-15",
-    "readTime": 8,
+    "date": "2026-02-20",
+    "readTime": 13,
+    "featured": true
+  },
+  {
+    "id": "5",
+    "title": "Setting Up Business Central in Docker for Local Development",
+    "slug": "business-central-docker-local-development",
+    "category": "DevOps",
+    "tags": [
+      "Docker",
+      "Business Central",
+      "Local Development",
+      "BcContainerHelper",
+      "PowerShell"
+    ],
+    "excerpt": "Step-by-step guide to running Business Central in Docker using BcContainerHelper â the fastest way to get a local BC development environment.",
+    "body": "# Setting Up Business Central in Docker for Local Development\n\nRunning Business Central locally in Docker is the fastest way to develop and test AL extensions without needing a cloud sandbox.\n\n## Prerequisites\n\n- **Docker Desktop** for Windows (with Windows containers)\n- **PowerShell 5.1+**\n- **BcContainerHelper** PowerShell module\n- At least 8GB RAM (16GB recommended)\n\n## Install BcContainerHelper\n\n```powershell\nInstall-Module BcContainerHelper -Force\nImport-Module BcContainerHelper\n```\n\n## Create a BC Container\n\n```powershell\n$params = @{\n  containerName      = 'bcdev'\n  imageName          = 'mcr.microsoft.com/businesscentral:sandbox'\n  accept_eula        = $true\n  accept_outdated    = $true\n  auth               = 'UserPassword'\n  credential         = (New-Object PSCredential 'admin',\n                        (ConvertTo-SecureString 'Password1!' -AsPlainText -Force))\n  updateHosts        = $true\n  licenseFile        = 'C:\\bc\\license.flf'\n}\n\nNew-BcContainer @params\n```\n\n## Useful BcContainerHelper Commands\n\n```powershell\n# Publish an extension\nPublish-BcContainerApp -containerName 'bcdev' `\n  -appFile '.\\output\\MyApp.app' `\n  -skipVerification\n\n# Run AL tests\nRun-TestsInBcContainer -containerName 'bcdev' `\n  -extensionId (Get-BcContainerAppInfo 'bcdev' | \n    Where-Object { $_.Name -eq 'MyApp' }).AppId\n\n# Get container logs\nGet-BcContainerEventLog -containerName 'bcdev'\n```\n\n## Connect VS Code to Your Container\n\nUpdate your `launch.json`:\n```json\n{\n  \"server\": \"http://bcdev\",\n  \"authentication\": \"UserPassword\",\n  \"credential\": {\n    \"userName\": \"admin\",\n    \"password\": \"Password1!\"\n  }\n}\n```\n\n## Troubleshooting Tips\n\n- **Container won't start?** Check Windows container mode in Docker Desktop\n- **License errors?** Ensure your `.flf` license file is for the correct BC version\n- **Slow startup?** First pull of the image takes 10-20 minutes â subsequent restarts are fast",
+    "published": true,
+    "date": "2026-02-15",
+    "readTime": 11,
+    "featured": false
+  },
+  {
+    "id": "4",
+    "title": "Building API Pages for External Integrations",
+    "slug": "building-api-pages-external-integrations",
+    "category": "Integrations",
+    "tags": [
+      "AL",
+      "API",
+      "OData",
+      "REST",
+      "Business Central",
+      "Integration"
+    ],
+    "excerpt": "How to create OData v4-compliant API pages in Business Central for seamless external system integration, with proper endpoint design.",
+    "body": "# Building API Pages for External Integrations\n\nBusiness Central's API pages expose your data as OData v4 endpoints, enabling seamless integration with Power BI, Power Automate, and external systems.\n\n## Basic API Page Structure\n\n```al\npage 50200 \"Customer API\"\n{\n  PageType = API;\n  APIPublisher = 'yourcompany';\n  APIGroup = 'core';\n  APIVersion = 'v1.0';\n  EntityName = 'customer';\n  EntitySetName = 'customers';\n  SourceTable = Customer;\n  DelayedInsert = true;\n  ODataKeyFields = SystemId;\n  \n  layout\n  {\n    area(Content)\n    {\n      group(General)\n      {\n        field(id; Rec.SystemId)\n        {\n          Caption = 'Id';\n          Editable = false;\n        }\n        field(number; Rec.\"No.\")\n        {\n          Caption = 'Number';\n        }\n        field(displayName; Rec.Name)\n        {\n          Caption = 'Display Name';\n        }\n        field(email; Rec.\"E-Mail\")\n        {\n          Caption = 'Email';\n        }\n      }\n    }\n  }\n}\n```\n\n## Accessing the Endpoint\n\n```http\nGET https://api.businesscentral.dynamics.com/v2.0/{tenantId}/{environment}/api/yourcompany/core/v1.0/companies({companyId})/customers\n```\n\n## Adding Filtering Support\n\nOData filtering works automatically:\n```http\nGET /customers?$filter=country eq 'GB'&$top=50&$orderby=displayName\n```\n\n## Securing Your API\n\n- Use **OAuth 2.0** with Azure AD app registration\n- Apply **permission sets** to control access\n- Consider **rate limiting** for external consumers\n\n## Best Practices\n\n1. Always use `SystemId` (GUID) as the OData key â never use business keys like document numbers\n2. Use `DelayedInsert = true` for API pages to handle complex insertions\n3. Implement proper error handling with meaningful error messages\n4. Version your APIs (`v1.0`, `v2.0`) to avoid breaking changes",
+    "published": true,
+    "date": "2026-02-08",
+    "readTime": 9,
+    "featured": false
+  },
+  {
+    "id": "3",
+    "title": "Optimizing AL Code for Performance",
+    "slug": "optimizing-al-code-performance",
+    "category": "Performance",
+    "tags": [
+      "AL",
+      "Performance",
+      "Optimization",
+      "Business Central",
+      "SQL"
+    ],
+    "excerpt": "Practical techniques to write faster AL code â from filtering strategies to temporary tables and avoiding N+1 query patterns.",
+    "body": "# Optimizing AL Code for Performance\n\nPoor performance is one of the most common issues in Business Central extensions. This guide covers the most impactful optimizations.\n\n## Filter Early, Filter Often\n\nThe golden rule: **filter data before you loop through it**.\n\n```al\n// BAD - Fetches all customers, checks in AL\nCustomer.FindSet();\nrepeat\n  if Customer.\"Country/Region Code\" = 'GB' then\n    ProcessCustomer(Customer);\nuntil Customer.Next() = 0;\n\n// GOOD - SQL does the filtering\nCustomer.SetRange(\"Country/Region Code\", 'GB');\nif Customer.FindSet() then\n  repeat\n    ProcessCustomer(Customer);\n  until Customer.Next() = 0;\n```\n\n## Use Temporary Tables\n\n```al\nvar\n  TempSalesLine: Record \"Sales Line\" temporary;\nbegin\n  // Load filtered data once\n  SalesLine.SetRange(\"Document No.\", SalesHeader.\"No.\");\n  if SalesLine.FindSet() then\n    repeat\n      TempSalesLine := SalesLine;\n      TempSalesLine.Insert();\n    until SalesLine.Next() = 0;\n    \n  // Process from temp table (fast, in-memory)\n  if TempSalesLine.FindSet() then\n    repeat\n      // Process...\n    until TempSalesLine.Next() = 0;\nend;\n```\n\n## Avoid CalcFields in Loops\n\n```al\n// BAD - Database hit on every iteration\nrepeat\n  Customer.CalcFields(\"Balance (LCY)\"); // Expensive!\n  if Customer.\"Balance (LCY)\" > 10000 then\n    SendAlert(Customer);\nuntil Customer.Next() = 0;\n\n// GOOD - Use FlowFields with SetAutoCalcFields\nCustomer.SetAutoCalcFields(\"Balance (LCY)\");\nCustomer.FindSet();\nrepeat\n  if Customer.\"Balance (LCY)\" > 10000 then\n    SendAlert(Customer);\nuntil Customer.Next() = 0;\n```\n\n## Key Performance Tips\n\n| Pattern | Performance | Note |\n|---------|-------------|------|\n| `FindSet()` + loop | Fast | Best for reading multiple records |\n| `Get()` | Very fast | Single record by primary key |\n| `FindFirst()` | Moderate | Adds `TOP 1` to SQL |\n| `Count()` | Slow | Full table scan without filter |\n| `CalcFields` in loop | Very slow | Avoid! |\n\n## Profiling Your Code\n\nUse the **AL Profiler** in VS Code to identify bottlenecks:\n1. Open Command Palette â `AL: Start CPU Profile`\n2. Perform the slow operation\n3. Stop the profile and analyze the flamegraph",
+    "published": true,
+    "date": "2026-02-01",
+    "readTime": 12,
     "featured": true
   },
   {
@@ -17,7 +94,13 @@
     "title": "Event-Driven Programming Patterns in AL",
     "slug": "event-driven-programming-patterns-al",
     "category": "AL Development",
-    "tags": ["AL", "Events", "Integration Events", "Business Central", "Patterns"],
+    "tags": [
+      "AL",
+      "Events",
+      "Integration Events",
+      "Business Central",
+      "Patterns"
+    ],
     "excerpt": "Learn how to use integration events and event subscribers to build extensible Business Central apps without modifying base objects.",
     "body": "# Event-Driven Programming Patterns in AL\n\nOne of the most powerful patterns in Business Central development is **event-driven programming**. It allows you to extend standard functionality without touching Microsoft's base application code.\n\n## Why Events Matter\n\nInstead of modifying the standard `Sales-Post` codeunit, you subscribe to events it publishes. This means:\n- Your code survives Microsoft updates\n- Multiple extensions can hook into the same event\n- Clean separation of concerns\n\n## Integration Events\n\n```al\ncodeunit 50101 \"Order Processing\"\n{\n  procedure ProcessOrder(var SalesHeader: Record \"Sales Header\")\n  var\n    IsHandled: Boolean;\n  begin\n    OnBeforeProcessOrder(SalesHeader, IsHandled);\n    if IsHandled then\n      exit;\n      \n    // Core processing logic\n    DoProcessOrder(SalesHeader);\n    \n    OnAfterProcessOrder(SalesHeader);\n  end;\n  \n  [IntegrationEvent(false, false)]\n  procedure OnBeforeProcessOrder(var SalesHeader: Record \"Sales Header\"; var IsHandled: Boolean)\n  begin\n  end;\n  \n  [IntegrationEvent(false, false)]\n  procedure OnAfterProcessOrder(var SalesHeader: Record \"Sales Header\")\n  begin\n  end;\n}\n```\n\n## Event Subscribers\n\n```al\ncodeunit 50102 \"Custom Validation Handler\"\n{\n  [EventSubscriber(ObjectType::Codeunit, Codeunit::\"Order Processing\",\n    OnBeforeProcessOrder, '', false, false)]\n  local procedure ValidateOrderOnBeforeProcess(\n    var SalesHeader: Record \"Sales Header\";\n    var IsHandled: Boolean)\n  begin\n    if SalesHeader.\"Sell-to Customer No.\" = '' then\n      Error('Customer number is required before processing.');\n  end;\n}\n```\n\n## Best Practices\n\n1. **Always use the Handled pattern** for events where subscribers might want to cancel default processing\n2. **Name events clearly**: `OnBefore...` and `OnAfter...` conventions\n3. **Pass records by reference** when subscribers need to modify them\n4. **Document your integration events** with XML comments for other developers",
     "published": true,
@@ -26,55 +109,21 @@
     "featured": false
   },
   {
-    "id": "3",
-    "title": "Optimizing AL Code for Performance",
-    "slug": "optimizing-al-code-performance",
-    "category": "Performance",
-    "tags": ["AL", "Performance", "Optimization", "Business Central", "SQL"],
-    "excerpt": "Practical techniques to write faster AL code — from filtering strategies to temporary tables and avoiding N+1 query patterns.",
-    "body": "# Optimizing AL Code for Performance\n\nPoor performance is one of the most common issues in Business Central extensions. This guide covers the most impactful optimizations.\n\n## Filter Early, Filter Often\n\nThe golden rule: **filter data before you loop through it**.\n\n```al\n// BAD - Fetches all customers, checks in AL\nCustomer.FindSet();\nrepeat\n  if Customer.\"Country/Region Code\" = 'GB' then\n    ProcessCustomer(Customer);\nuntil Customer.Next() = 0;\n\n// GOOD - SQL does the filtering\nCustomer.SetRange(\"Country/Region Code\", 'GB');\nif Customer.FindSet() then\n  repeat\n    ProcessCustomer(Customer);\n  until Customer.Next() = 0;\n```\n\n## Use Temporary Tables\n\n```al\nvar\n  TempSalesLine: Record \"Sales Line\" temporary;\nbegin\n  // Load filtered data once\n  SalesLine.SetRange(\"Document No.\", SalesHeader.\"No.\");\n  if SalesLine.FindSet() then\n    repeat\n      TempSalesLine := SalesLine;\n      TempSalesLine.Insert();\n    until SalesLine.Next() = 0;\n    \n  // Process from temp table (fast, in-memory)\n  if TempSalesLine.FindSet() then\n    repeat\n      // Process...\n    until TempSalesLine.Next() = 0;\nend;\n```\n\n## Avoid CalcFields in Loops\n\n```al\n// BAD - Database hit on every iteration\nrepeat\n  Customer.CalcFields(\"Balance (LCY)\"); // Expensive!\n  if Customer.\"Balance (LCY)\" > 10000 then\n    SendAlert(Customer);\nuntil Customer.Next() = 0;\n\n// GOOD - Use FlowFields with SetAutoCalcFields\nCustomer.SetAutoCalcFields(\"Balance (LCY)\");\nCustomer.FindSet();\nrepeat\n  if Customer.\"Balance (LCY)\" > 10000 then\n    SendAlert(Customer);\nuntil Customer.Next() = 0;\n```\n\n## Key Performance Tips\n\n| Pattern | Performance | Note |\n|---------|-------------|------|\n| `FindSet()` + loop | Fast | Best for reading multiple records |\n| `Get()` | Very fast | Single record by primary key |\n| `FindFirst()` | Moderate | Adds `TOP 1` to SQL |\n| `Count()` | Slow | Full table scan without filter |\n| `CalcFields` in loop | Very slow | Avoid! |\n\n## Profiling Your Code\n\nUse the **AL Profiler** in VS Code to identify bottlenecks:\n1. Open Command Palette → `AL: Start CPU Profile`\n2. Perform the slow operation\n3. Stop the profile and analyze the flamegraph",
+    "id": "1",
+    "title": "Getting Started with AL Development in Business Central",
+    "slug": "getting-started-al-development-business-central",
+    "category": "AL Development",
+    "tags": [
+      "AL",
+      "Business Central",
+      "Getting Started",
+      "VS Code"
+    ],
+    "excerpt": "A comprehensive guide to setting up your AL development environment and writing your first extension for Microsoft Dynamics 365 Business Central.",
+    "body": "# Getting Started with AL Development in Business Central\n\nMicrosoft Dynamics 365 Business Central uses the **AL programming language** for all customizations and extensions. This guide walks you through setting up your environment and writing your first extension.\n\n## Prerequisites\n\nBefore you begin, you'll need:\n- **VS Code** with the AL Language extension\n- **Business Central sandbox** environment (or Docker container)\n- Basic understanding of object-oriented programming\n\n## Setting Up Your Environment\n\n### 1. Install VS Code Extensions\n\nInstall the following VS Code extensions:\n```bash\n# Search in VS Code marketplace:\n- AL Language (by Microsoft)\n- AZ AL Dev Tools/AL Code Outline\n- CRS AL Language Extension\n```\n\n### 2. Configure launch.json\n\n```json\n{\n  \"version\": \"0.2.0\",\n  \"configurations\": [\n    {\n      \"type\": \"al\",\n      \"request\": \"launch\",\n      \"name\": \"Your own server\",\n      \"server\": \"https://yourtenant.dynamics.com\",\n      \"tenant\": \"your-tenant-id\",\n      \"authentication\": \"AAD\"\n    }\n  ]\n}\n```\n\n## Your First AL Object\n\nHere's a simple table extension to get you started:\n\n```al\ntableextension 50100 \"MyCustomer Extension\" extends Customer\n{\n  fields\n  {\n    field(50100; \"Custom Field\"; Text[100])\n    {\n      Caption = 'Custom Field';\n      DataClassification = CustomerContent;\n    }\n  }\n}\n```\n\n## Key Concepts\n\n- **Object IDs**: Always use IDs in the 50000-99999 range for custom objects\n- **Data Classification**: Always set this for GDPR compliance\n- **Event-driven**: Use events for extensibility rather than modifying base objects\n\n## Next Steps\n\nOnce you're comfortable with basic objects, explore:\n1. Page extensions and page customizations\n2. Codeunits for business logic\n3. Report extensions\n4. API pages for integrations",
     "published": true,
-    "date": "2026-02-01",
-    "readTime": 12,
-    "featured": true
-  },
-  {
-    "id": "4",
-    "title": "Building API Pages for External Integrations",
-    "slug": "building-api-pages-external-integrations",
-    "category": "Integrations",
-    "tags": ["AL", "API", "OData", "REST", "Business Central", "Integration"],
-    "excerpt": "How to create OData v4-compliant API pages in Business Central for seamless external system integration, with proper endpoint design.",
-    "body": "# Building API Pages for External Integrations\n\nBusiness Central's API pages expose your data as OData v4 endpoints, enabling seamless integration with Power BI, Power Automate, and external systems.\n\n## Basic API Page Structure\n\n```al\npage 50200 \"Customer API\"\n{\n  PageType = API;\n  APIPublisher = 'yourcompany';\n  APIGroup = 'core';\n  APIVersion = 'v1.0';\n  EntityName = 'customer';\n  EntitySetName = 'customers';\n  SourceTable = Customer;\n  DelayedInsert = true;\n  ODataKeyFields = SystemId;\n  \n  layout\n  {\n    area(Content)\n    {\n      group(General)\n      {\n        field(id; Rec.SystemId)\n        {\n          Caption = 'Id';\n          Editable = false;\n        }\n        field(number; Rec.\"No.\")\n        {\n          Caption = 'Number';\n        }\n        field(displayName; Rec.Name)\n        {\n          Caption = 'Display Name';\n        }\n        field(email; Rec.\"E-Mail\")\n        {\n          Caption = 'Email';\n        }\n      }\n    }\n  }\n}\n```\n\n## Accessing the Endpoint\n\n```http\nGET https://api.businesscentral.dynamics.com/v2.0/{tenantId}/{environment}/api/yourcompany/core/v1.0/companies({companyId})/customers\n```\n\n## Adding Filtering Support\n\nOData filtering works automatically:\n```http\nGET /customers?$filter=country eq 'GB'&$top=50&$orderby=displayName\n```\n\n## Securing Your API\n\n- Use **OAuth 2.0** with Azure AD app registration\n- Apply **permission sets** to control access\n- Consider **rate limiting** for external consumers\n\n## Best Practices\n\n1. Always use `SystemId` (GUID) as the OData key — never use business keys like document numbers\n2. Use `DelayedInsert = true` for API pages to handle complex insertions\n3. Implement proper error handling with meaningful error messages\n4. Version your APIs (`v1.0`, `v2.0`) to avoid breaking changes",
-    "published": true,
-    "date": "2026-02-08",
-    "readTime": 9,
-    "featured": false
-  },
-  {
-    "id": "5",
-    "title": "Setting Up Business Central in Docker for Local Development",
-    "slug": "business-central-docker-local-development",
-    "category": "DevOps",
-    "tags": ["Docker", "Business Central", "Local Development", "BcContainerHelper", "PowerShell"],
-    "excerpt": "Step-by-step guide to running Business Central in Docker using BcContainerHelper — the fastest way to get a local BC development environment.",
-    "body": "# Setting Up Business Central in Docker for Local Development\n\nRunning Business Central locally in Docker is the fastest way to develop and test AL extensions without needing a cloud sandbox.\n\n## Prerequisites\n\n- **Docker Desktop** for Windows (with Windows containers)\n- **PowerShell 5.1+**\n- **BcContainerHelper** PowerShell module\n- At least 8GB RAM (16GB recommended)\n\n## Install BcContainerHelper\n\n```powershell\nInstall-Module BcContainerHelper -Force\nImport-Module BcContainerHelper\n```\n\n## Create a BC Container\n\n```powershell\n$params = @{\n  containerName      = 'bcdev'\n  imageName          = 'mcr.microsoft.com/businesscentral:sandbox'\n  accept_eula        = $true\n  accept_outdated    = $true\n  auth               = 'UserPassword'\n  credential         = (New-Object PSCredential 'admin',\n                        (ConvertTo-SecureString 'Password1!' -AsPlainText -Force))\n  updateHosts        = $true\n  licenseFile        = 'C:\\bc\\license.flf'\n}\n\nNew-BcContainer @params\n```\n\n## Useful BcContainerHelper Commands\n\n```powershell\n# Publish an extension\nPublish-BcContainerApp -containerName 'bcdev' `\n  -appFile '.\\output\\MyApp.app' `\n  -skipVerification\n\n# Run AL tests\nRun-TestsInBcContainer -containerName 'bcdev' `\n  -extensionId (Get-BcContainerAppInfo 'bcdev' | \n    Where-Object { $_.Name -eq 'MyApp' }).AppId\n\n# Get container logs\nGet-BcContainerEventLog -containerName 'bcdev'\n```\n\n## Connect VS Code to Your Container\n\nUpdate your `launch.json`:\n```json\n{\n  \"server\": \"http://bcdev\",\n  \"authentication\": \"UserPassword\",\n  \"credential\": {\n    \"userName\": \"admin\",\n    \"password\": \"Password1!\"\n  }\n}\n```\n\n## Troubleshooting Tips\n\n- **Container won't start?** Check Windows container mode in Docker Desktop\n- **License errors?** Ensure your `.flf` license file is for the correct BC version\n- **Slow startup?** First pull of the image takes 10-20 minutes — subsequent restarts are fast",
-    "published": true,
-    "date": "2026-02-15",
-    "readTime": 11,
-    "featured": false
-  },
-  {
-    "id": "6",
-    "title": "Error Handling and Telemetry in Business Central Extensions",
-    "slug": "error-handling-telemetry-business-central",
-    "category": "Best Practices",
-    "tags": ["AL", "Error Handling", "Telemetry", "TryFunction", "Business Central"],
-    "excerpt": "Master robust error handling with TryFunctions, error labels, and custom telemetry to make your BC extensions production-ready.",
-    "body": "# Error Handling and Telemetry in Business Central Extensions\n\nProduction-ready BC extensions need robust error handling and observability. Let's look at the right patterns.\n\n## TryFunctions — Your Error Safety Net\n\n```al\nprocedure ProcessExternalData(DataJson: Text): Boolean\nvar\n  ErrorText: Text;\n  ProcessFailedLbl: Label 'External data processing failed: %1',\n    Comment = '%1 = Error details';\nbegin\n  if not TryParseAndProcess(DataJson) then begin\n    ErrorText := GetLastErrorText();\n    Message(ProcessFailedLbl, ErrorText);\n    exit(false);\n  end;\n  exit(true);\nend;\n\n[TryFunction]\nlocal procedure TryParseAndProcess(DataJson: Text)\nvar\n  JObject: JsonObject;\nbegin\n  JObject.ReadFrom(DataJson);\n  // Throws inside TryFunction = caught gracefully above\n  ProcessJsonData(JObject);\nend;\n```\n\n## Always Use Error Labels\n\n```al\n// BAD - Hardcoded strings\nError('Customer not found');\n\n// GOOD - Label variables for localization & consistency\nvar\n  CustomerNotFoundErr: Label 'Customer %1 was not found in the system.',\n    Comment = '%1 = Customer number';\nbegin\n  Error(CustomerNotFoundErr, CustomerNo);\nend;\n```\n\n## Custom Telemetry with Session.LogMessage\n\n```al\nprocedure PostSalesDocument(var SalesHeader: Record \"Sales Header\")\nvar\n  CustomDimensions: Dictionary of [Text, Text];\n  PostedSuccessMsg: Label 'Sales document posted', Locked = true;\n  PostFailedMsg: Label 'Sales document posting failed', Locked = true;\nbegin\n  CustomDimensions.Add('DocumentType', Format(SalesHeader.\"Document Type\"));\n  CustomDimensions.Add('CustomerNo', SalesHeader.\"Sell-to Customer No.\");\n  \n  if TryPostSalesDocument(SalesHeader) then\n    Session.LogMessage('POST001', PostedSuccessMsg,\n      Verbosity::Normal, DataClassification::SystemMetadata,\n      TelemetryScope::ExtensionPublisher, CustomDimensions)\n  else begin\n    CustomDimensions.Add('Error', GetLastErrorText());\n    Session.LogMessage('POST002', PostFailedMsg,\n      Verbosity::Error, DataClassification::SystemMetadata,\n      TelemetryScope::ExtensionPublisher, CustomDimensions);\n  end;\nend;\n```\n\n## Connecting to Azure Application Insights\n\nAdd to your `app.json`:\n```json\n{\n  \"applicationInsightsKey\": \"your-instrumentation-key-here\"\n}\n```\n\nThen filter your telemetry in Azure Monitor:\n```kusto\ntraces\n| where customDimensions.extensionPublisher == 'YourCompany'\n| where message startswith 'POST'\n| project timestamp, message, customDimensions\n| order by timestamp desc\n```",
-    "published": true,
-    "date": "2026-02-20",
-    "readTime": 13,
+    "date": "2026-01-15",
+    "readTime": 8,
     "featured": true
   }
 ]
