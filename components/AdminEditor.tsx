@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { Save, X, Tag, Calendar, Type, AlignLeft, Eye, EyeOff } from "lucide-react";
+import { Save, X, Tag, Calendar, Type, AlignLeft, Eye, EyeOff, FileUp } from "lucide-react";
 import { Post, generateSlug } from "@/lib/posts";
 
 interface AdminEditorProps {
@@ -69,6 +69,47 @@ export default function AdminEditor({
 
     const [tagsInput, setTagsInput] = useState(form.tags.join(", "));
     const [preview, setPreview] = useState(false);
+    const [showImport, setShowImport] = useState(false);
+    const [importText, setImportText] = useState("");
+
+    const handleImportMarkdown = () => {
+        const md = importText.trim();
+        if (!md) return;
+
+        // Extract title from first # heading
+        const titleMatch = md.match(/^# (.+)$/m);
+        const title = titleMatch ? titleMatch[1].trim() : "";
+
+        // Extract excerpt: first non-empty paragraph after the title
+        const lines = md.split("\n");
+        let excerpt = "";
+        let pastTitle = !titleMatch;
+        for (const line of lines) {
+            if (!pastTitle) {
+                if (titleMatch && line.startsWith("# ")) { pastTitle = true; continue; }
+                continue;
+            }
+            const trimmed = line.trim();
+            if (!trimmed || trimmed.startsWith("#") || trimmed.startsWith(">") || trimmed.startsWith("---") || trimmed.startsWith("```")) continue;
+            excerpt = trimmed.slice(0, 200);
+            break;
+        }
+
+        // Estimate read time (~200 words/min)
+        const wordCount = md.split(/\s+/).filter(Boolean).length;
+        const readTime = Math.max(1, Math.round(wordCount / 200));
+
+        setForm((prev) => ({
+            ...prev,
+            title,
+            slug: generateSlug(title),
+            body: md,
+            excerpt,
+            readTime,
+        }));
+        setShowImport(false);
+        setImportText("");
+    };
 
     const update = (field: keyof Post, value: unknown) => {
         setForm((prev) => {
@@ -156,6 +197,16 @@ export default function AdminEditor({
                         </div>
                     </div>
                     <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                        {isNew && (
+                            <button
+                                onClick={() => setShowImport(!showImport)}
+                                className="btn-outline"
+                                style={{ padding: "6px 12px", fontSize: "0.72rem" }}
+                            >
+                                <FileUp size={13} />
+                                {showImport ? "cancel import" : "import .md"}
+                            </button>
+                        )}
                         <button
                             onClick={() => setPreview(!preview)}
                             className="btn-outline"
@@ -191,6 +242,53 @@ export default function AdminEditor({
                         gap: "1rem",
                     }}
                 >
+                    {/* Import Panel */}
+                    {showImport && (
+                        <div
+                            style={{
+                                padding: "1rem",
+                                background: "var(--bg)",
+                                border: "1px dashed var(--amber)",
+                                borderRadius: "4px",
+                            }}
+                        >
+                            <div
+                                style={{
+                                    fontFamily: "var(--font-mono)",
+                                    fontSize: "0.65rem",
+                                    color: "var(--amber)",
+                                    marginBottom: "8px",
+                                }}
+                            >
+                                {"// paste your .md file content below"}
+                            </div>
+                            <textarea
+                                value={importText}
+                                onChange={(e) => setImportText(e.target.value)}
+                                placeholder={"# Post Title\n\nPaste your full markdown here..."}
+                                rows={10}
+                                style={{
+                                    ...inputStyle,
+                                    resize: "vertical",
+                                    lineHeight: 1.6,
+                                    minHeight: "180px",
+                                }}
+                            />
+                            <button
+                                onClick={handleImportMarkdown}
+                                disabled={!importText.trim()}
+                                className="btn-amber"
+                                style={{
+                                    marginTop: "10px",
+                                    opacity: !importText.trim() ? 0.5 : 1,
+                                }}
+                            >
+                                <FileUp size={13} />
+                                apply import
+                            </button>
+                        </div>
+                    )}
+
                     {/* Title */}
                     <div>
                         <label style={labelStyle}>

@@ -1,0 +1,73 @@
+# Fix: BC Cloud Restore — "No Paid License for Production Companies" Error
+
+When restoring a **Business Central cloud (production) database** into a Docker container, you may encounter:
+
+> _"You cannot open the company because you do not have a paid license for production companies."_
+
+This happens because the restored database has companies flagged as **Production**, which requires a specific license type that most ISV/dev licenses don't cover in Docker.
+
+---
+
+## Quick Fix — Mark Companies as Evaluation
+
+Run the SQL update against your restored database inside the container, then restart it.
+
+### Step 1: Update Company Flag
+
+Replace `<ContainerName>` and `<DatabaseName>` with your values.
+
+```powershell
+docker exec -it <ContainerName> powershell -Command "Invoke-Sqlcmd -Query 'UPDATE [Company] SET [Evaluation Company] = 1' -Database '<DatabaseName>'"
+```
+
+**Example (used in this fix):**
+```powershell
+docker exec -it BC27-TestEnv powershell -Command "Invoke-Sqlcmd -Query 'UPDATE [Company] SET [Evaluation Company] = 1' -Database 'Production_20260222_02_Latest'"
+```
+
+> This updates **all** companies in the database. Your data is unaffected — only the company type metadata changes.
+
+To target a **specific company** only:
+```powershell
+docker exec -it <ContainerName> powershell -Command "Invoke-Sqlcmd -Query `"UPDATE [Company] SET [Evaluation Company] = 1 WHERE [Name] = 'YourCompanyName'`" -Database '<DatabaseName>'"
+```
+
+### Step 2: Restart the Container
+
+```powershell
+Restart-BcContainer -containerName "<ContainerName>"
+```
+
+---
+
+## Optional — Import / Verify Your ISV License
+
+If the above alone doesn't resolve it, ensure your license is properly imported into the container:
+
+```powershell
+Import-BcContainerLicense -containerName "<ContainerName>" -licenseFile "C:\path\to\your\license.bclicense"
+Restart-BcContainer -containerName "<ContainerName>"
+```
+
+---
+
+## Diagnostic Query
+
+To check the current company type before/after the fix:
+
+```powershell
+docker exec -it <ContainerName> powershell -Command "Invoke-Sqlcmd -Query 'SELECT [Name], [Evaluation Company] FROM [Company]' -Database '<DatabaseName>'"
+```
+
+- `Evaluation Company = 0` → Production (causes the error)
+- `Evaluation Company = 1` → Evaluation (works with ISV/dev license)
+
+---
+
+## Summary
+
+| Step | Command |
+|------|---------|
+| Fix all companies | `UPDATE [Company] SET [Evaluation Company] = 1` |
+| Restart container | `Restart-BcContainer -containerName "..."` |
+| Verify | `SELECT [Name], [Evaluation Company] FROM [Company]` |

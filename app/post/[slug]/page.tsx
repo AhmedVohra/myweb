@@ -8,7 +8,7 @@ interface Post {
 }
 
 export function generateStaticParams(): { slug: string }[] {
-    const filePath = path.join(process.cwd(), "data", "posts.json");
+    const filePath = path.join(process.cwd(), "public", "data", "posts.json");
     const raw = fs.readFileSync(filePath, "utf-8");
     const posts: Post[] = JSON.parse(raw);
     return posts.map((p) => ({ slug: p.slug }));

@@ -7,7 +7,7 @@ export interface GitHubConfig {
     token: string;
 }
 
-const DATA_PATH = "data/posts.json";
+const DATA_PATH = "public/data/posts.json";
 
 // Read posts from GitHub repo
 export async function readPostsFromGitHub(config: GitHubConfig): Promise<Post[]> {
