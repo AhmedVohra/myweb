@@ -1,5 +1,37 @@
 [
   {
+    "id": "1771879132701",
+    "title": "Fix: BC Cloud Restore — \"No Paid License for Production Companies\" Error",
+    "slug": "fix-bc-cloud-restore-no-paid-license-for-production-companies-error",
+    "category": "AL Development",
+    "tags": [],
+    "excerpt": "When restoring a **Business Central cloud (production) database** into a Docker container, you may encounter:",
+    "body": "# Fix: BC Cloud Restore — \"No Paid License for Production Companies\" Error\n\nWhen restoring a **Business Central cloud (production) database** into a Docker container, you may encounter:\n\n> _\"You cannot open the company because you do not have a paid license for production companies.\"_\n\nThis happens because the restored database has companies flagged as **Production**, which requires a specific license type that most ISV/dev licenses don't cover in Docker.\n\n---\n\n## Quick Fix — Mark Companies as Evaluation\n\nRun the SQL update against your restored database inside the container, then restart it.\n\n### Step 1: Update Company Flag\n\nReplace `<ContainerName>` and `<DatabaseName>` with your values.\n\n```powershell\ndocker exec -it <ContainerName> powershell -Command \"Invoke-Sqlcmd -Query 'UPDATE [Company] SET [Evaluation Company] = 1' -Database '<DatabaseName>'\"\n```\n\n**Example (used in this fix):**\n```powershell\ndocker exec -it BC27-TestEnv powershell -Command \"Invoke-Sqlcmd -Query 'UPDATE [Company] SET [Evaluation Company] = 1' -Database 'Production_20260222_02_Latest'\"\n```\n\n> This updates **all** companies in the database. Your data is unaffected — only the company type metadata changes.\n\nTo target a **specific company** only:\n```powershell\ndocker exec -it <ContainerName> powershell -Command \"Invoke-Sqlcmd -Query `\"UPDATE [Company] SET [Evaluation Company] = 1 WHERE [Name] = 'YourCompanyName'`\" -Database '<DatabaseName>'\"\n```\n\n### Step 2: Restart the Container\n\n```powershell\nRestart-BcContainer -containerName \"<ContainerName>\"\n```\n\n---\n\n## Optional — Import / Verify Your ISV License\n\nIf the above alone doesn't resolve it, ensure your license is properly imported into the container:\n\n```powershell\nImport-BcContainerLicense -containerName \"<ContainerName>\" -licenseFile \"C:\\path\\to\\your\\license.bclicense\"\nRestart-BcContainer -containerName \"<ContainerName>\"\n```\n\n---\n\n## Diagnostic Query\n\nTo check the current company type before/after the fix:\n\n```powershell\ndocker exec -it <ContainerName> powershell -Command \"Invoke-Sqlcmd -Query 'SELECT [Name], [Evaluation Company] FROM [Company]' -Database '<DatabaseName>'\"\n```\n\n- `Evaluation Company = 0` → Production (causes the error)\n- `Evaluation Company = 1` → Evaluation (works with ISV/dev license)\n\n---\n\n## Summary\n\n| Step | Command |\n|------|---------|\n| Fix all companies | `UPDATE [Company] SET [Evaluation Company] = 1` |\n| Restart container | `Restart-BcContainer -containerName \"...\"` |\n| Verify | `SELECT [Name], [Evaluation Company] FROM [Company]` |",
+    "published": false,
+    "date": "2026-02-23",
+    "readTime": 2,
+    "featured": false
+  },
+  {
+    "id": "7",
+    "title": "Fix: BC Cloud Restore â \"No Paid License for Production Companies\" Error",
+    "slug": "bc-restore-production-license-fix",
+    "category": "DevOps",
+    "tags": [
+      "Business Central",
+      "Docker",
+      "BcContainerHelper",
+      "PowerShell",
+      "Troubleshooting"
+    ],
+    "excerpt": "When restoring a Business Central cloud production database into a Docker container, you may hit a license error blocking access. Here's the quick SQL fix.",
+    "body": "# Fix: BC Cloud Restore â \"No Paid License for Production Companies\" Error\n\nWhen restoring a **Business Central cloud (production) database** into a Docker container, you may encounter:\n\n> _\"You cannot open the company because you do not have a paid license for production companies.\"_\n\nThis happens because the restored database has companies flagged as **Production**, which requires a specific license type that most ISV/dev licenses don't cover in Docker.\n\n---\n\n## Quick Fix â Mark Companies as Evaluation\n\nRun the SQL update against your restored database inside the container, then restart it.\n\n### Step 1: Update Company Flag\n\nReplace `<ContainerName>` and `<DatabaseName>` with your values.\n\n```powershell\ndocker exec -it <ContainerName> powershell -Command \"Invoke-Sqlcmd -Query 'UPDATE [Company] SET [Evaluation Company] = 1' -Database '<DatabaseName>'\"\n```\n\n**Example (used in this fix):**\n```powershell\ndocker exec -it BC27-TestEnv powershell -Command \"Invoke-Sqlcmd -Query 'UPDATE [Company] SET [Evaluation Company] = 1' -Database 'Production_20260222_02_Latest'\"\n```\n\n> This updates **all** companies in the database. Your data is unaffected â only the company type metadata changes.\n\nTo target a **specific company** only:\n```powershell\ndocker exec -it <ContainerName> powershell -Command \"Invoke-Sqlcmd -Query `\"UPDATE [Company] SET [Evaluation Company] = 1 WHERE [Name] = 'YourCompanyName'`\" -Database '<DatabaseName>'\"\n```\n\n### Step 2: Restart the Container\n\n```powershell\nRestart-BcContainer -containerName \"<ContainerName>\"\n```\n\n---\n\n## Optional â Import / Verify Your ISV License\n\nIf the above alone doesn't resolve it, ensure your license is properly imported into the container:\n\n```powershell\nImport-BcContainerLicense -containerName \"<ContainerName>\" -licenseFile \"C:\\\\path\\\\to\\\\your\\\\license.bclicense\"\nRestart-BcContainer -containerName \"<ContainerName>\"\n```\n\n---\n\n## Diagnostic Query\n\nTo check the current company type before/after the fix:\n\n```powershell\ndocker exec -it <ContainerName> powershell -Command \"Invoke-Sqlcmd -Query 'SELECT [Name], [Evaluation Company] FROM [Company]' -Database '<DatabaseName>'\"\n```\n\n- `Evaluation Company = 0` â Production (causes the error)\n- `Evaluation Company = 1` â Evaluation (works with ISV/dev license)\n\n---\n\n## Summary\n\n| Step | Command |\n|------|---------|\n| Fix all companies | `UPDATE [Company] SET [Evaluation Company] = 1` |\n| Restart container | `Restart-BcContainer -containerName \"...\"` |\n| Verify | `SELECT [Name], [Evaluation Company] FROM [Company]` |",
+    "published": true,
+    "date": "2026-02-24",
+    "readTime": 5,
+    "featured": false
+  },
+  {
     "id": "6",
     "title": "Error Handling and Telemetry in Business Central Extensions",
     "slug": "error-handling-telemetry-business-central",
