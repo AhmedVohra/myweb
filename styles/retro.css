@@ -1,0 +1,526 @@
+/* ============================================
+   RETRO KNOWLEDGEBASE - Global Retro Styles
+   CRT Effects, Scanlines, Glitch Animations
+   ============================================ */
+
+@import url("https://fonts.googleapis.com/css2?family=Press+Start+2P&family=VT323:wght@400&family=Share+Tech+Mono&display=swap");
+
+/* ---- CSS Custom Properties ---- */
+:root {
+  --bg: #0a0e1a;
+  --surface: #0f1829;
+  --surface2: #162035;
+  --primary: #f97316;
+  --primary-glow: rgba(249, 115, 22, 0.4);
+  --secondary: #22d3ee;
+  --secondary-glow: rgba(34, 211, 238, 0.35);
+  --accent: #facc15;
+  --accent-glow: rgba(250, 204, 21, 0.35);
+  --green: #4ade80;
+  --green-glow: rgba(74, 222, 128, 0.3);
+  --text: #e2e8f0;
+  --text-muted: #94a3b8;
+  --border: #1e3a5f;
+  --border-bright: #2d5a8e;
+  --font-pixel: "Press Start 2P", monospace;
+  --font-terminal: "VT323", monospace;
+  --font-mono: "Share Tech Mono", monospace;
+  --scanline-opacity: 0.035;
+  --glow-radius: 0 0 8px;
+}
+
+/* ---- Base Reset ---- */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  scroll-behavior: smooth;
+  font-size: 16px;
+}
+
+body {
+  background-color: var(--bg);
+  color: var(--text);
+  font-family: var(--font-mono);
+  font-size: 1rem;
+  line-height: 1.7;
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+/* ============================================
+   CRT SCANLINE OVERLAY
+   ============================================ */
+.crt-overlay {
+  pointer-events: none;
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  background: repeating-linear-gradient(
+    to bottom,
+    transparent 0px,
+    transparent 2px,
+    rgba(0, 0, 0, var(--scanline-opacity)) 2px,
+    rgba(0, 0, 0, var(--scanline-opacity)) 4px
+  );
+  animation: flicker 8s infinite;
+}
+
+.crt-overlay::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(
+    ellipse at center,
+    transparent 60%,
+    rgba(0, 0, 0, 0.4) 100%
+  );
+}
+
+@keyframes flicker {
+  0%,
+  95%,
+  100% {
+    opacity: 1;
+  }
+  96% {
+    opacity: 0.97;
+  }
+  97% {
+    opacity: 1;
+  }
+  98% {
+    opacity: 0.95;
+  }
+  99% {
+    opacity: 1;
+  }
+}
+
+/* ============================================
+   TEXT GLOW UTILITIES
+   ============================================ */
+.glow-primary {
+  text-shadow: 0 0 10px var(--primary-glow), 0 0 20px var(--primary-glow),
+    0 0 40px var(--primary-glow);
+}
+
+.glow-secondary {
+  text-shadow: 0 0 10px var(--secondary-glow), 0 0 20px var(--secondary-glow);
+}
+
+.glow-accent {
+  text-shadow: 0 0 10px var(--accent-glow), 0 0 20px var(--accent-glow);
+}
+
+.glow-green {
+  text-shadow: 0 0 10px var(--green-glow), 0 0 20px var(--green-glow);
+}
+
+.box-glow-primary {
+  box-shadow: 0 0 10px var(--primary-glow), 0 0 20px rgba(249, 115, 22, 0.15),
+    inset 0 0 10px rgba(249, 115, 22, 0.05);
+}
+
+.box-glow-secondary {
+  box-shadow: 0 0 10px var(--secondary-glow),
+    0 0 20px rgba(34, 211, 238, 0.1),
+    inset 0 0 10px rgba(34, 211, 238, 0.05);
+}
+
+/* ============================================
+   GLITCH EFFECT
+   ============================================ */
+@keyframes glitch-shift {
+  0% {
+    clip-path: inset(0 0 95% 0);
+    transform: translate(-3px, 0);
+  }
+  10% {
+    clip-path: inset(30% 0 50% 0);
+    transform: translate(3px, 0);
+  }
+  20% {
+    clip-path: inset(70% 0 10% 0);
+    transform: translate(-3px, 0);
+  }
+  30% {
+    clip-path: inset(10% 0 80% 0);
+    transform: translate(3px, 0);
+  }
+  100% {
+    clip-path: inset(0 0 95% 0);
+    transform: translate(0, 0);
+  }
+}
+
+.glitch-wrapper {
+  position: relative;
+  display: inline-block;
+}
+
+.glitch-wrapper::before,
+.glitch-wrapper::after {
+  content: attr(data-text);
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+}
+
+.glitch-wrapper:hover::before {
+  opacity: 0.8;
+  color: var(--secondary);
+  animation: glitch-shift 0.3s steps(2) forwards;
+  text-shadow: -2px 0 var(--secondary);
+}
+
+.glitch-wrapper:hover::after {
+  opacity: 0.8;
+  color: var(--primary);
+  animation: glitch-shift 0.3s steps(2) 0.05s forwards;
+  text-shadow: 2px 0 var(--primary);
+}
+
+/* ============================================
+   PIXEL BORDERS
+   ============================================ */
+.pixel-border {
+  border: 2px solid var(--border-bright);
+  position: relative;
+}
+
+.pixel-border::before {
+  content: "";
+  position: absolute;
+  top: -4px;
+  left: -4px;
+  right: -4px;
+  bottom: -4px;
+  border: 1px solid var(--border);
+  pointer-events: none;
+}
+
+.pixel-corner {
+  position: relative;
+}
+
+.pixel-corner::before,
+.pixel-corner::after {
+  content: "▮";
+  position: absolute;
+  font-size: 8px;
+  color: var(--primary);
+  opacity: 0.6;
+}
+
+.pixel-corner::before {
+  top: 4px;
+  left: 4px;
+}
+
+.pixel-corner::after {
+  bottom: 4px;
+  right: 4px;
+}
+
+/* ============================================
+   TERMINAL CURSOR
+   ============================================ */
+@keyframes cursor-blink {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0;
+  }
+}
+
+.cursor-blink::after {
+  content: "_";
+  animation: cursor-blink 1s infinite;
+  color: var(--primary);
+  margin-left: 2px;
+}
+
+/* ============================================
+   BOOT SEQUENCE ANIMATION
+   ============================================ */
+@keyframes boot-in {
+  0% {
+    opacity: 0;
+    transform: scaleY(0.01) scaleX(0.8);
+    filter: brightness(10);
+  }
+  10% {
+    opacity: 1;
+    transform: scaleY(0.03) scaleX(1);
+    filter: brightness(5);
+  }
+  30% {
+    transform: scaleY(1) scaleX(1);
+    filter: brightness(1.5);
+  }
+  100% {
+    transform: scaleY(1) scaleX(1);
+    filter: brightness(1);
+  }
+}
+
+.boot-animate {
+  animation: boot-in 0.6s cubic-bezier(0.23, 1, 0.32, 1) both;
+}
+
+/* ============================================
+   SCROLLBAR
+   ============================================ */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--surface);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--border-bright);
+  border-radius: 0;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--primary);
+}
+
+/* ============================================
+   RETRO SELECTION
+   ============================================ */
+::selection {
+  background: var(--primary);
+  color: var(--bg);
+}
+
+/* ============================================
+   PIXEL DIVIDER
+   ============================================ */
+.pixel-divider {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 1.5rem 0;
+  color: var(--primary);
+  font-family: var(--font-pixel);
+  font-size: 8px;
+}
+
+.pixel-divider::before,
+.pixel-divider::after {
+  content: "";
+  flex: 1;
+  height: 1px;
+  background: linear-gradient(to right, transparent, var(--border-bright), transparent);
+}
+
+/* ============================================
+   CARD HOVER SCAN EFFECT
+   ============================================ */
+@keyframes scan-line {
+  0% {
+    top: 0%;
+  }
+  100% {
+    top: 100%;
+  }
+}
+
+.card-scan {
+  overflow: hidden;
+  position: relative;
+}
+
+.card-scan::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: linear-gradient(
+    to right,
+    transparent,
+    var(--primary-glow),
+    transparent
+  );
+  opacity: 0;
+  top: 0;
+  pointer-events: none;
+}
+
+.card-scan:hover::after {
+  opacity: 1;
+  animation: scan-line 0.6s linear forwards;
+}
+
+/* ============================================
+   MARKDOWN CONTENT STYLES
+   ============================================ */
+.prose-retro {
+  font-family: var(--font-mono);
+  color: var(--text);
+  font-size: 1.1rem;
+  line-height: 1.8;
+}
+
+.prose-retro h1,
+.prose-retro h2,
+.prose-retro h3,
+.prose-retro h4 {
+  font-family: var(--font-pixel);
+  color: var(--primary);
+  margin: 1.5em 0 0.75em;
+  line-height: 1.4;
+}
+
+.prose-retro h1 {
+  font-size: 1.1rem;
+  text-shadow: 0 0 15px var(--primary-glow);
+}
+
+.prose-retro h2 {
+  font-size: 0.9rem;
+  color: var(--secondary);
+  text-shadow: 0 0 10px var(--secondary-glow);
+}
+
+.prose-retro h3 {
+  font-size: 0.75rem;
+  color: var(--accent);
+}
+
+.prose-retro p {
+  margin-bottom: 1.2em;
+}
+
+.prose-retro a {
+  color: var(--secondary);
+  text-decoration: none;
+  border-bottom: 1px solid var(--secondary-glow);
+  transition: all 0.2s;
+}
+
+.prose-retro a:hover {
+  color: var(--primary);
+  border-bottom-color: var(--primary);
+  text-shadow: 0 0 8px var(--primary-glow);
+}
+
+.prose-retro code {
+  font-family: var(--font-mono);
+  background: rgba(34, 211, 238, 0.08);
+  color: var(--secondary);
+  padding: 2px 6px;
+  border: 1px solid rgba(34, 211, 238, 0.2);
+  font-size: 0.9em;
+}
+
+.prose-retro pre {
+  background: #060b14;
+  border: 1px solid var(--border-bright);
+  border-left: 3px solid var(--primary);
+  padding: 1.25rem;
+  overflow-x: auto;
+  margin: 1.5em 0;
+  position: relative;
+}
+
+.prose-retro pre::before {
+  content: "// code";
+  position: absolute;
+  top: 6px;
+  right: 10px;
+  font-size: 0.65rem;
+  color: var(--text-muted);
+  font-family: var(--font-pixel);
+}
+
+.prose-retro pre code {
+  background: none;
+  border: none;
+  color: var(--text);
+  padding: 0;
+  font-size: 0.9rem;
+}
+
+.prose-retro blockquote {
+  border-left: 3px solid var(--accent);
+  padding-left: 1rem;
+  color: var(--text-muted);
+  font-style: italic;
+  margin: 1rem 0;
+}
+
+.prose-retro ul,
+.prose-retro ol {
+  padding-left: 1.5rem;
+  margin-bottom: 1.2em;
+}
+
+.prose-retro li {
+  margin-bottom: 0.3em;
+}
+
+.prose-retro table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 1.5em 0;
+  font-size: 0.95rem;
+}
+
+.prose-retro th {
+  background: var(--surface2);
+  color: var(--primary);
+  padding: 0.5rem 0.75rem;
+  text-align: left;
+  font-family: var(--font-pixel);
+  font-size: 0.6rem;
+  border: 1px solid var(--border-bright);
+}
+
+.prose-retro td {
+  padding: 0.5rem 0.75rem;
+  border: 1px solid var(--border);
+}
+
+.prose-retro tr:nth-child(even) td {
+  background: rgba(255, 255, 255, 0.02);
+}
+
+/* ============================================
+   SEARCH HIGHLIGHT
+   ============================================ */
+.search-highlight mark {
+  background: var(--accent);
+  color: var(--bg);
+  padding: 0 2px;
+}
+
+/* ============================================
+   LOADING STATES
+   ============================================ */
+@keyframes pulse-glow {
+  0%,
+  100% {
+    opacity: 0.5;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+.loading-pulse {
+  animation: pulse-glow 1.5s ease-in-out infinite;
+}
